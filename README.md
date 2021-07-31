@@ -1,3 +1,3 @@
-# bare-metal-iac
+# IaC for bare metal servers
 
 WIP
