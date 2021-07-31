@@ -1,0 +1,12 @@
+- hosts: 
+    - idealj
+  roles:
+    - role: tools
+    - role: users
+      default_user_password: TempPass4321
+      users:
+        - dummy
+      admins:
+        - admin
+    - role: firewall
+        

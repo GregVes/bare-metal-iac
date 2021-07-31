@@ -1,0 +1,83 @@
+- name: tools
+  block:
+  - name: update repo and upgrade packages
+    apt:
+      upgrade: yes
+      update_cache: yes
+      cache_valid_time: 86400 # 1 day
+    become: yes
+    tags:
+      - upgrade
+
+  - name: install utils
+    apt:
+      name: ["tree", "htop", "vim", "jq", "python-pip", "python3-pip", "strace"]
+    register: toolsinstalled
+    retries: 3
+    delay: 10
+    until: toolsinstalled is not failed
+    become: true
+  - name: copy bash profile
+    copy:
+      dest: ~/.vimrc
+      src: vimrc
+  - name: network tools
+    apt:
+      name: ['net-tools', 'dnsutils', 'netcat', "wget", "tcpdump"]
+    register: toolsinstalled
+    retries: 3
+    delay: 10
+    until: toolsinstalled is not failed
+    become: true
+    tags:
+      - network
+
+  - name: snapd package manager
+    apt:
+      name: [ 'snapd' ]
+    register: toolsinstalled
+    retries: 3
+    delay: 10
+    until: toolsinstalled is not failed
+    become: true
+    tags:
+      - network
+
+  - name: certbot
+    snap:
+      name: certbot
+      classic: yes
+    become: true
+
+  - name: containerization
+    apt:
+      name: ["docker", "docker-compose"]
+    register: toolsinstalled
+    retries: 3
+    delay: 10
+    until: toolsinstalled is not failed
+    become: true
+
+  - name: Gather package facts
+    package_facts:
+      manager: auto
+    tags:
+      - java
+
+  - name: Install openjdk 11 if not installed
+    apt:
+      name: openjdk-11-jdk
+    become: yes
+    when: "'java' not in ansible_facts.packages"
+    tags:
+      - java
+
+  - name: Install maven if openjdk 11 if not installed
+    apt:
+      name: maven
+    become: yes
+    when: "'java' not in ansible_facts.packages"
+    tags:
+      - java
+    
+  tags: tools
