@@ -1,0 +1,37 @@
+- name: gcloud
+  block:
+  - name: Install gcloud if not installed
+    shell: |
+      if [ ! -L "{{ gcloud_bin_path }}" ]; then
+        snap install google-cloud-sdk --classic
+        ln -s "{{ gcloud_bin_path }}" /usr/bin/gcloud
+      fi
+    become: yes
+    tags:
+      - gcloud
+
+  - name: Check if gcloud service account file exists
+    stat:
+      path: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}"
+    become: yes
+    tags:
+      - gcloud
+    register: gcloud_key_file
+
+  - name: if gcloud sa file does not exist, create its parent folder
+    file:
+      path: "{{ gcloud_sa_folder }}"
+      state: directory
+    become: yes
+    tags:
+      - gcloud
+    when: not gcloud_key_file.stat.exists
+
+  - name: if gcloud sa file does not exist, copy encrypted file
+    copy:
+      src: "{{ gcloud_sa_file_name }}"
+      dest: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
+    become: yes
+    tags:
+      - gcloud
+    when: not gcloud_key_file.stat.exists

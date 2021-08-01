@@ -9,4 +9,9 @@
       admins:
         - admin
     - role: firewall
+    - role: gcloud
+      gcloud_bin_path: /snap/bin/gcloud
+      gcloud_sa_folder: /root/.gcloud/credentials
+      gcloud_sa_file_name: sa-key.json
         
+

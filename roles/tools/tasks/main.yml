@@ -23,7 +23,7 @@
       src: vimrc
   - name: network tools
     apt:
-      name: ['net-tools', 'dnsutils', 'netcat', "wget", "tcpdump"]
+      name: ['net-tools', 'dnsutils', 'netcat', "wget", "tcpdump", "rsync"]
     register: toolsinstalled
     retries: 3
     delay: 10
