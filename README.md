@@ -3,7 +3,7 @@
 This is an Ansible configuration for a Debian 10 server. I'll update it when I have to automate something or for refactoring.
 
 Requirements:
- - for the gcloud role, we install the CLI and you need to place an encrypted `sa-key.json` (use gpg) in `./roles/gcloud/files`, so it gets copied into the host's `/root/.gcloud/credentials/sa-key.json`. Pass the encrypted file password as the `sa_key_password` extra var to your playbook, so the file can be decrypted on the remote host.
+ - for the gcloud role, we install the CLI and you need to place an encrypted `sa-key.json.gpg` (use gpg) in `./roles/gcloud/files`, so it gets copied into the host's `/root/.gcloud/credentials/sa-key.json.gpg`. Pass the encrypted file password as the `sa_key_password` extra var to your playbook, so the file can be decrypted on the remote host.
 
 ## How to...
 
