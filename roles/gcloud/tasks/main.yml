@@ -27,10 +27,10 @@
       - gcloud
     when: not gcloud_key_file.stat.exists
 
-  - name: if gcloud sa file does not exist, copy it
+  - name: if gcloud sa file does not exist, copy encrypted file
     copy:
       src: "{{ gcloud_sa_file_name }}"
-      dest: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}"
+      dest: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
     become: yes
     tags:
       - gcloud
