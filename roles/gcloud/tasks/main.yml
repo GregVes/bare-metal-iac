@@ -65,5 +65,11 @@
     become: yes
     when: sa_key_encrypted.stat.exists
 
+  - name:  authenticate to gcloud
+    shell: |
+      set -e
+      gcloud auth activate-service-account --key-file={{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}
+    become: yes
+
   tags:
     - gcloud
