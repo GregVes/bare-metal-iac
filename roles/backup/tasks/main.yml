@@ -1,0 +1,13 @@
+- name: tools
+  block:
+  - name: install "{{ backup_package }}"
+    apt:
+      name: "{{ backup_package }}"
+    retries: 3
+    delay: 10
+    become: true
+    register: borg_installed
+    until: borg_installed is not failed
+
+  tags:
+    - backup
