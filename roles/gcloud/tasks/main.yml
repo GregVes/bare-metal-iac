@@ -1,46 +1,69 @@
 - name: gcloud
   block:
-  - name: Install gcloud if not installed
-    shell: |
-      if [ ! -L "{{ gcloud_bin_path }}" ]; then
-        snap install google-cloud-sdk --classic
-        ln -s "{{ gcloud_bin_path }}" /usr/bin/gcloud
-      fi
-    become: yes
-    tags:
-      - gcloud
-
-  - name: Check if gcloud service account file exists
+  - name: Check if gcloud is installed
     stat:
-      path: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}"
-    become: yes
-    tags:
-      - gcloud
-    register: gcloud_key_file
+      path: "{{ gcloud_bin_path }}"
+    become: true
+    register: gcloud_bin
 
-  - name: if gcloud sa file does not exist, create its parent folder
+
+  - name: Add gcloud sdk distr URI as a package source if gcloud is not installed
+    lineinfile:
+      path: /etc/apt/sources.list.d/google-cloud-sdk.list
+      line: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main"
+      create: yes
+    become: true
+    when: not gcloud_bin.stat.exists
+
+  - name: Add gcloud as a trusted package if gcloud is not installed
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      keyring: /usr/share/keyrings/cloud.google.gpg
+    become: true
+    when: not gcloud_bin.stat.exists
+
+  - name: Update repo cache
+    apt:
+      update_cache: yes
+    become: yes
+
+  - name: install gcloud if does not exist
+    apt:
+      name: google-cloud-sdk
+    become: yes
+        
+  - name: if gcloud creds folder does not exist, create it
     file:
       path: "{{ gcloud_sa_folder }}"
       state: directory
     become: yes
-    tags:
-      - gcloud
-    when: not gcloud_key_file.stat.exists
 
-  - name: if gcloud sa file does not exist, copy encrypted file version
+  - name: Check if gcloud sa key file exist, 
+    stat:
+      path : "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}"
+    become: yes
+    register: sa_key
+
+  - name: if gcloud sa key does not exist, copy encrypted version
     copy:
       src: "{{ gcloud_sa_file_name }}.gpg"
       dest: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
     become: yes
-    tags:
-      - gcloud
-    when: not gcloud_key_file.stat.exists
+    when: not sa_key.stat.exists
 
-  - name:  if gcloud sa file does not exist, decrypt gcloud sa key json file
+  - name: Check if gcloud sa encrypted key file exist, 
+    stat:
+      path : "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
+    become: yes
+    register: sa_key_encrypted
+    
+  - name:  if gcloud sa encrypted key exists, decrypt it
     shell: |
       set -e
       echo "{{ gcloud_sa_key_password }}" | gpg --batch --yes  --passphrase-fd 0 "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
+      rm -rf "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
     become: yes
-    tags:
-      - gcloud
-    when: not gcloud_key_file.stat.exists
+    when: sa_key_encrypted.stat.exists
+
+  tags:
+    - gcloud
