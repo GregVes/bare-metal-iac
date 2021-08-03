@@ -59,7 +59,7 @@ with_items: "{{ users_to_delete }}"
 ```sh
 ansible-playbook playbook.yml -i inventory -v --tags users_down --extra-vars='{"users_to_delete": ["user1"]}'
 ```
-### Creata a role
+### Create a role
 
 You group configuration in a role so that you can reuse it
 

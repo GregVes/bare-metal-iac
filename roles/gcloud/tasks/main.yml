@@ -27,10 +27,19 @@
       - gcloud
     when: not gcloud_key_file.stat.exists
 
-  - name: if gcloud sa file does not exist, copy encrypted file
+  - name: if gcloud sa file does not exist, copy encrypted file version
     copy:
-      src: "{{ gcloud_sa_file_name }}"
+      src: "{{ gcloud_sa_file_name }}.gpg"
       dest: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
+    become: yes
+    tags:
+      - gcloud
+    when: not gcloud_key_file.stat.exists
+
+  - name:  if gcloud sa file does not exist, decrypt gcloud sa key json file
+    shell: |
+      set -e
+      echo "{{ gcloud_sa_key_password }}" | gpg --batch --yes  --passphrase-fd 0 "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}.gpg"
     become: yes
     tags:
       - gcloud
