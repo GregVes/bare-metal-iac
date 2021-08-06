@@ -13,6 +13,5 @@
       gcloud_bin_path: /usr/bin/gcloud
       gcloud_sa_folder: /root/.config/gcloud/credentials
       gcloud_sa_file_name: sa-key.json
+      server_name: idealj
     - role: backup
-        
-

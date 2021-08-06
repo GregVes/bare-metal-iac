@@ -1,0 +1,5 @@
+gcloud:
+  idealj:
+    project_name: greggentoo
+    backup_bucket_name: backups
+    sa_file: sa-key.json

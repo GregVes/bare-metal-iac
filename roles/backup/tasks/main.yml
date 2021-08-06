@@ -9,5 +9,29 @@
     register: borg_installed
     until: borg_installed is not failed
 
+  - name: create a project
+    google.cloud.gcp_resourcemanager_project:
+      name: "{{ item }}"
+      id: "{{ item }}-project"
+      auth_kind: serviceaccount
+      service_account_file: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}"
+      parent:
+        type: organization
+        id: 636173955921
+      state: present
+    with_items: "{{ servers_gcloud_project_names }}"
+
+#  - name: create gcloud bucket for storing backups from Borg
+#    shell: |
+#      set -x
+#      set -e
+#      gsutil mb -p "{{ item }}" gs://"{{ item }}-backups"
+#    become: yes
+#    with_items: "{{ servers_gcloud_project_names }}"
+
   tags:
     - backup
+
+
+    # create bucket
+    # sudo gsutil mb -p radio400-supabase-api gs://greg-gentoo
