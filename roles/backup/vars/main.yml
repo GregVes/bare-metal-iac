@@ -1,2 +1,0 @@
-backup_package: borgbackup
-gcloud_backup_project_name: servers-backups

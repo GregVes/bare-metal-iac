@@ -14,4 +14,8 @@
       gcloud_sa_folder: /root/.config/gcloud/credentials
       gcloud_sa_file_name: sa-key.json
       server_name: idealj
-    - role: backup
+    - role: borg-backup
+      shell_config: .zshrc
+      shell_path: /usr/bin/zsh
+      admin: gregory
+      tags: ["backup"]

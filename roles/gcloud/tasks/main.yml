@@ -70,5 +70,21 @@
       gcloud auth activate-service-account --key-file={{ gcloud_sa_folder }}/{{ gcloud[server_name].sa_file }}
     become: yes
 
+  - name: add google-auth Python lib
+    pip:
+      name:
+        - google-auth
+    become: yes
+
+ # The following fails because of https://github.com/GregVes/bare-metal-iac/issues/7
+  - name: create bucket for backups
+    google.cloud.gcp_storage_bucket:
+      name: "{{ server_name }}-backups"
+      project: gcloud[server_name].project_name
+      auth_kind: serviceaccount
+      service_account_file: "{{ gcloud_sa_folder }}/{{ gcloud_sa_file_name }}"
+      state: present
+    become: yes
+
   tags:
     - gcloud
