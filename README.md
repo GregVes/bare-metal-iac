@@ -1,4 +1,4 @@
-# IaC for bare metal servers
+# IaC for Debian servers
 
 This is an Ansible configuration for a Debian 10 server. I'll update it when I have to automate something or for refactoring.
 
