@@ -24,7 +24,9 @@
       borgmatic_config_name: config.yaml
       borg_source_directories:
         - /
+      borg_backup_script: daily-backup.sh
       borg_repository: /root/backups
+      borg_gcloud_bucket: idealj-backups
       borg_exclude_patterns:
         - /dev
         - /sys

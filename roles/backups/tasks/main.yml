@@ -43,6 +43,22 @@
     shell: borgmatic init --encryption repokey
     become: yes
 
+  - name: Check if backup script exists
+    stat:
+      path: "/root/{{ borg_backup_script }}"
+    become: yes
+    register: backup_script
+
+  - name: Copy backup script if not exists
+    copy:
+      src: "{{ borg_backup_script }}"
+      dest: "/root/{{ borg_backup_script }}"
+      mode: 710 
+      owner: root
+      group: root
+    become: yes
+    when: not backup_script.stat.exists
+
   - name: Create Cron job for backups
     cron:
       name: "{{ borgmatic_cron_name }}"
@@ -50,8 +66,7 @@
       minute: "{{ borgmatic_cron_minute }}"
       user: "root"
       cron_file: "{{ borgmatic_cron_name }}"
-      # calling "borgmatic" would not fire the program. So we use the full path temporarily
-      job: "/usr/local/bin/borgmatic --log-file /var/log/borgmatic/borgmatic.log -c /etc/borgmatic/{{ borgmatic_config_name }}"
+      job: "/root/{{ borg_backup_script }} {{ borg_repository }} {{ borg_gcloud_bucket }}"
     become: yes
 
   tags:

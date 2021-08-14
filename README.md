@@ -4,12 +4,6 @@ This is an Ansible configuration for a Debian 10 server. I'll update it when I h
 
 Requirements:
  - for the gcloud role, we install the CLI and a `sa-key.json.gpg` (see [here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) how to generate a service account file) is expected in `./roles/gcloud/files`, so it gets copied into the host's `/root/.gcloud/credentials/sa-key.json.gpg`. Pass the encrypted file password as the `sa_key_password` extra var to your playbook, so the file can be decrypted on the remote host. You also need to create 
-- for the backup role, you need to [`ansible-galaxy install m3nu.ansible_role_borgbackup`](https://github.com/borgbase/ansible-role-borgbackup) and pass  the following extra vars:
-* `borg_encryption_passphrase`
-* `borg_repository`
-*`bourg_source_directories` (list)
-* `borgmatic_cron_hour`
-* `borgmatic_cron_minute`
 
 ## How to...
 
