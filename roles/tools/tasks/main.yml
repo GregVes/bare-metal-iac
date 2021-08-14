@@ -17,6 +17,7 @@
     delay: 10
     until: toolsinstalled is not failed
     become: true
+
   - name: copy bash profile
     copy:
       dest: ~/.vimrc

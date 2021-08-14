@@ -1,0 +1,4 @@
+gcloud:
+  idealj:
+    project_name: radio400-supabase-api
+    sa_file: sa-key.json
