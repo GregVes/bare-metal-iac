@@ -1,9 +1,4 @@
-# IaC for Debian servers
-
-This is an Ansible configuration for a Debian 10 server. I'll update it when I have to automate something or for refactoring.
-
-Requirements:
- - for the gcloud role, we install the CLI and a `sa-key.json.gpg` (see [here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) how to generate a service account file) is expected in `./roles/gcloud/files`, so it gets copied into the host's `/root/.gcloud/credentials/sa-key.json.gpg`. Pass the encrypted file password as the `sa_key_password` extra var to your playbook, so the file can be decrypted on the remote host. You also need to create 
+# Automated provisiononing of VMs for a k8s cluster
 
 ## How to...
 
@@ -21,7 +16,7 @@ ansible-playbook playbook.yml -i inventory -v
 # ./roles/users/tasks/main.yml
 - name: create users
 user:
-    name: "{{ item }}" 
+    name: "{{ item }}"
     state: present
     password: "{{ default_user_password | password_hash('sha512', 'A512') }}"
     shell: "{% if users_credentials[item].shell is defined %}{{ users_credentials[item].shell }}{%else %}/bin/bash{% endif %}"
@@ -75,7 +70,7 @@ mkdir -p roles/<my-role>/vars
 
 ```yml
 # playbook.yml
-- hosts: 
+- hosts:
     - idealj
   roles:
     - role: tools

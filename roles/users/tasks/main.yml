@@ -2,7 +2,7 @@
   block:
   - name: create users
     user:
-      name: "{{ item }}" 
+      name: "{{ item }}"
       state: present
       password: "{{ default_user_password | password_hash('sha512', 'A512') }}"
       shell: "{% if users_credentials[item].shell is defined %}{{ users_credentials[item].shell }}{%else %}/bin/bash{% endif %}"
@@ -22,7 +22,7 @@
       - users_up
     with_items: "{{ users + admins }}"
 
-  - name: Check if ~/.ssh/authorized keys file exists
+  - name: Check if ~/.ssh/authorized_keys file exists
     stat:
       path: "/home/{{ item }}/.ssh/authorized_keys"
     register: auth_keys_file
@@ -31,19 +31,20 @@
       - users_up
     with_items: "{{ users + admins }}"
 
-  - name: .ssh/authorized_keys exists with correct perm
-    shell: |
-      FILE=/home/{{ item }}/.ssh/authorized_keys
-      if [ ! -f $FILE ]; then
-        echo "" > $FILE
-        chown {{ item }} $FILE
-        chgrp {{ item }} $FILE
-        chmod 0600 $FILE
-      fi
+  - name: Create ~/.ssh/authorized_keys if not exists
+    file:
+      path: "/home/{{ item[1] }}/.ssh/authorized_keys"
+      state: touch
+      owner: "{{ item[1] }}"
+      group: "{{ item[1] }}"
+      mode: 0600
     become: true
     tags:
       - users_up
-    with_items: "{{ users + admins }}"
+    when: item[0].stat.exists == False
+    with_together:
+      - "{{ auth_keys_file.results }}"
+      - "{{ users + admins }}"
 
   - name: user can login with their ssh pub key
     blockinfile:
@@ -52,7 +53,7 @@
     become: true
     tags:
       - users_up
-    with_items: "{{ users + admins }}" 
+    with_items: "{{ users + admins }}"
 
   - name: delete users
     user:

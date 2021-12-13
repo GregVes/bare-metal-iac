@@ -50,35 +50,57 @@
       classic: yes
     become: true
 
-  - name: containerization
-    apt:
-      name: ["docker", "docker-compose"]
-    register: toolsinstalled
-    retries: 3
-    delay: 10
-    until: toolsinstalled is not failed
+  - name: Check if Jabba is already installed
+    stat:
+      path: "/home/{{ item }}/.jabba"
+    register: jabba
+    with_items: "{{ users + admins }}"
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+    tags:
+      - java
+
+  - name: Install Jabba if not installed
+    script: jabba-install.sh
+    tags:
+      - java
+    when: item[0].stat.exists == False
     become: true
+    become_method: sudo
+    become_user: "{{ item[1] }}"
+    tags:
+      - java
+    with_together:
+      - "{{ jabba.results }}"
+      - "{{ users + admins }}"
 
-  - name: Gather package facts
-    package_facts:
-      manager: auto
+  - name: Check if Jabba post instructions are set in ~/.bashrc
+    lineinfile:
+      state: absent
+      path: "/home/{{ item }}/.bashrc"
+      regexp: "jabba"
+    check_mode: true
+    changed_when: false
+    register: check_bashrc
+    with_items: "{{ users + admins }}"
+    become: true
+    become_method: sudo
+    become_user: "{{ item }}"
     tags:
       - java
 
-  - name: Install openjdk 11 if not installed
-    apt:
-      name: openjdk-11-jdk
-    become: yes
-    when: "'java' not in ansible_facts.packages"
+  - name: Update ~/.bashrc after Jabba install if not done
+    lineinfile:
+      state: present
+      path: "/home/{{ item[1] }}/.bashrc"
+      line: "[ -s '/home/{{ item[1] }}/.jabba/jabba.sh' ] && source '/home/{{ item[1] }}/.jabba/jabba.sh'"
+    when: item[0].found == 0
+    with_together:
+      - "{{ check_bashrc.results }}"
+      - "{{ users + admins }}"
+    become: true
+    become_method: sudo
+    become_user: "{{ item[1] }}"
     tags:
       - java
-
-  - name: Install maven if openjdk 11 if not installed
-    apt:
-      name: maven
-    become: yes
-    when: "'java' not in ansible_facts.packages"
-    tags:
-      - java
-    
   tags: tools

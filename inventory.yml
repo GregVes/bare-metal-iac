@@ -1,5 +1,8 @@
 debian:
-  hosts: 
+  hosts:
     idealj:
-      ansible_host: 51.38.148.95
-      ansible_user: gregory
+      ansible_host: gregentoo.com
+      users:
+        - dummy
+      admins:
+        - admin
