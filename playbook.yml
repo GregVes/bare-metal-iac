@@ -1,7 +1,45 @@
 - hosts:
-    - idealj
+  - idealj
   roles:
-    - role: tools
     - role: users
-      default_user_password: TempPass4321
-    - role: firewall
+      admins:
+        - gregory
+      users: []
+    - role: tools
+      admins:
+        - gregory
+      users: []
+      base_pkgs:
+        - git
+        - rsync
+        - tmux
+        - htop
+        - iotop
+        - sysstat
+        - vim
+        - jq
+        - python3
+        - python3-pip
+        - stress
+      network_pkgs:
+        - nmap
+        - net-tools
+        - dnsutils
+        - ntp
+        - netcat
+        - nload
+        - curl
+        - wget
+        - tcpdump
+      docker_required_pkgs:
+        - apt-transport-https
+        - ca-certificates
+        - software-properties-common
+        - gnupg
+        - lsb-release
+      docker_pkgs:
+        - containerd.io
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+    - role: virtualization

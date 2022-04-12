@@ -1,0 +1,20 @@
+- name: create vms
+  tags:
+    - virt_vm_remove
+  block:
+  - name: stop vms
+    virt:
+      name: "{{ item }}"
+      command: shutdown
+      state: shutdown
+    become_user: "{{ virt_admin }}"
+    become: true
+    with_items: "{{ vms_to_remove }}"
+
+  - name: undefine vms
+    virt:
+      name: "{{ item }}"
+      command: undefine
+    become_user: "{{ virt_admin }}"
+    become: true
+    with_items: "{{ vms_to_remove }}"

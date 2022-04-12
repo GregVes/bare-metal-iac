@@ -1,0 +1,95 @@
+- name: create users
+  tags: users_up
+  block:
+  - name: create-users-groups
+    group:
+      name: "{{ item }}"
+      gid: "{{ users_credentials[item].id }}"
+    when: users_credentials[item].id is defined
+    become: true
+    with_items: "{{ users + admins }}"
+
+  - name: create-users
+    user:
+      name: "{{ item }}"
+      group: "{{ item }}"
+      create_home: yes
+      home: "/home/{{ item }}"
+      password: "{{ default_password | password_hash('sha512') }}"
+    become: true
+    with_items: "{{ users + admins }}"
+
+  - name: add-admins-to-sudo-group
+    user:
+      name: "{{ item }}"
+      groups: sudo
+      append: true
+    become: true
+    with_items: "{{ admins }}"
+
+  - name: set-sudo-passwordless-for-admins
+    lineinfile:
+      path: /etc/sudoers
+      regexp: "^{{ item }}"
+      line: "{{ item }} ALL=(ALL) NOPASSWD:ALL"
+    with_items: "{{ admins }}"
+    become: true
+
+  - name: check-if-vimrc-exists
+    stat:
+      path: "/home/{{ item }}/.vimrc"
+    register: vimrc
+    become: true
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+
+  - name: copy-vimrc-if-not-exists
+    copy:
+      src: .vimrc
+      dest: "/home/{{ item[1] }}"
+    when: item[0].stat.exists == False
+    become: true
+    become_user: "{{ item[1] }}"
+    with_together:
+      - "{{ vimrc.results }}"
+      - "{{ users + admins }}"
+
+  - name: check-if-ssh-dir-exists
+    stat:
+      path: "/home/{{ item }}/.ssh"
+    register: ssh_dir
+    with_items: "{{ users + admins }}"
+
+  - name: create-ssh-dir-if-not-exists
+    file:
+      path: "/home/{{ item[1] }}/.ssh"
+      state: directory
+      mode: 0755
+      owner: "{{ item[1] }}"
+      group: "{{ item[1] }}"
+    become: true
+    when: item[0].stat.exists == False
+    with_together:
+      - "{{ ssh_dir.results }}"
+      - "{{ users + admins }}"
+
+  - name: set-users-authorized-public-keys
+    authorized_key:
+      user: "{{ item }}"
+      state: present
+      key: "{{ users_credentials[item].ssh_pub_keys | join('\n') }}"
+    become: true
+    with_items: "{{ users + admins }}"
+
+  - name: disable-ssh-password-login
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^PasswordAuthentication'
+      line: PasswordAuthentication no
+    become: true
+
+  - name: restart-sshd
+    service:
+      name: sshd
+      state: restarted
+    become: true

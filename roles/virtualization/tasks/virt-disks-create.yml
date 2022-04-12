@@ -1,0 +1,164 @@
+- name: create disk images
+  tags:
+    - virt_disks_create
+  block:
+  - name: check if VMs are already running
+    virt:
+      command: list_vms
+      state: running
+    register: running_vms
+    become_user: "{{ virt_admin }}"
+    become: true
+
+  - name: create node disks directory
+    file:
+      path: "{{ virt_disks_path }}"
+      state: directory
+      mode: 0770
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  - name: create virt config directory
+    file:
+      path: "{{ virt_config_path }}"
+      state: directory
+      mode: 0770
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  # TO DELETE
+  # - name: check if k8s master node disk image exists
+  #   stat:
+  #     path: "{{ master_node_disk_path }}"
+  #   register: master_node_disk_image
+  #   become_user: "{{ virt_admin }}"
+  #   become: true
+
+  - name: download k8s master node disk image
+    get_url:
+      url: "{{ virt_disk_url }}"
+      dest: "{{ master_node_disk_path }}"
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  # # # - name: check if worker nodes disk images exist
+  # # #   stat:
+  # # #     path: "{{ item.path }}"
+  # # #   register: workers_nodes_disk_images
+  # # #   become: true
+  # # #   with_items: "{{ worker_nodes }}"
+
+  # # # - name: download worker nodes disk images
+  # # #   get_url:
+  # # #     url: "{{ virt_disk_url }}"
+  # # #     dest: "{{ item[1].path  }}"
+  # # #   when: item[0].stat.exists == False
+  # # #   become: true
+  # # #   with_together:
+  # # #     - "{{ workers_nodes_disk_images.results }}"
+  # # #     - "{{ worker_nodes }}"
+
+  - name: resize master node disk image
+    shell: |
+      sudo qemu-img resize "{{ master_node_disk_path }}" "{{ master_node_disk_size }}"G
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  # # # - name: resize workers nodes disk images
+  # # #   shell: |
+  # # #     sudo qemu-img resize "{{ item.path }}" "{{ item.size }}"G
+  # # #   become: true
+  # # #   with_items: "{{ worker_nodes }}"
+
+  - name: copy virtualization config for master node
+    copy:
+      src: "{{ virt_master_node_k8s_config }}"
+      dest: "{{ virt_config_path }}/{{ virt_master_node_k8s_config }}"
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  - name: copy master network interfaces file into host
+    template:
+      src: virt-interfaces-master.j2
+      dest: "{{ master_network_config_host_path }}"
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  # # # - name: copy virtualization config for worker nodes
+  # # #   copy:
+  # # #     src: "{{ virt_worker_nodes_k8s_config }}"
+  # # #     dest: "{{ virt_config_path }}/{{ virt_worker_nodes_k8s_config }}"
+  # # #   become: true
+
+  - name: copy /etc/resolv.conf for nodes
+    copy:
+      src: resolv.conf
+      dest: "{{ virt_config_path }}/resolv.conf"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  - name: virtualization config for master node
+    shell: |
+      virt-customize  \
+        -a "{{ master_node_disk_path }}" \
+        --root-password password:"{{ virt_root_password }}" \
+        --timezone "{{ virt_timezone }}" \
+        --hostname "{{ master_node_hostname }}" \
+        --copy-in "{{ master_network_config_host_path }}:{{ master_network_config_dest_path }}" \
+        --copy-in "{{ virt_config_path }}/resolv.conf:{{ resolv_conf_path }}" \
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  - name: allow bridged traffic
+    lineinfile:
+      path: "{{ firewall_before_rules_file }}"
+      insertafter: "^# End required lines"
+      regexp: "^-I FORWARD -m physdev --physdev-is-bridged -j ACCEPT"
+      line: "-I FORWARD -m physdev --physdev-is-bridged -j ACCEPT"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  - name: add virt admin to libvirt group
+    user:
+      append: yes
+      groups: libvirt,kvm
+      name: "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  - name: set the virt_admin as user for QEMU processes
+    lineinfile:
+      path: "{{ qemu_conf }}"
+      regexp: ^user = "root"
+      line: user = "{{ virt_admin }}"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  - name: set libvirt as group for QEMU processes
+    lineinfile:
+      path: "{{ qemu_conf }}"
+      regexp: ^group = "root"
+      line: group = "libvirt"
+    become: true
+    when: running_vms["list_vms"] | length < 0
+
+  # - name: virtualization config for worker nodes
+  #   shell: |
+  #     virt-customize \
+  #       -a "{{ item[1].path }}" \
+  #       --root-password password:"{{ virt_root_password }}" \
+  #       --timezone "{{ virt_timezone }}" \
+  #       --hostname "{{ item[1].hostname }}" \
+  #       --copy-in "{{ virt_config_path }}/resolv.conf:{{ resolv_conf_path }}"
+  #   become: true
+  #   when: item[0].stat.exists == False
+  #   with_together:
+  #     - "{{ workers_nodes_disk_images.results }}"
+  #     - "{{ worker_nodes }}"

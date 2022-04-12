@@ -1,0 +1,44 @@
+- name: install virtualization packages
+  include_tasks: virt-pkgs-install.yml
+  tags:
+    - virt_pkgs_up
+
+- name: uninstall virtualization packages
+  include_tasks: virt-pkgs-uninstall.yml
+  tags:
+    - virt_pkgs_down
+
+- name: generate host network config
+  include_tasks: host-network-config-up.yml
+  tags:
+    - host_net_config_up
+
+- name: remove host network config
+  include_tasks: host-network-config-down.yml
+  tags:
+    - host_net_config_down
+
+- name: create disk images
+  include_tasks: virt-disks-create.yml
+  tags:
+    - virt_disks_create
+
+- name: remove disk images
+  include_tasks: virt-disks-remove.yml
+  tags:
+    - virt_disks_remove
+
+- name: create vms
+  include_tasks: virt-vm-create.yml
+  tags:
+    - virt_vm_create
+
+- name: remove vms
+  include_tasks: virt-vm-remove.yml
+  tags:
+    - virt_vm_remove
+
+- name: list vms
+  include_tasks: virt-vm-list.yml
+  tags:
+    - virt_vm_list

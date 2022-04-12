@@ -1,0 +1,39 @@
+- name: uninstall Docker components
+  tags: docker_down
+  block:
+  - name: uninstall-docker-pkgs
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+      state: absent
+    register: apt_docker_pkgs
+    retries: 3
+    delay: 10
+    until: apt_docker_pkgs is success
+    with_items: "{{ docker_pkgs }}"
+    become: true
+
+  - name: uninstall-required-docker-pkgs
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+      state: absent
+    register: apt_docker_required_pkgs
+    retries: 3
+    delay: 10
+    until: apt_docker_required_pkgs is success
+    become: true
+    with_items: "{{ docker_required_pkgs }}"
+
+  - name: remove-docker-apt-repo
+    file:
+      name: /etc/apt/sources.list.d/docker.list
+      state: absent
+    become: true
+
+  # Cannot be done without key ID
+  # - name: remove-docker-gpg-apt-key
+  #   apt_key:
+  #     state: absent
+  #     keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+  #   become: true

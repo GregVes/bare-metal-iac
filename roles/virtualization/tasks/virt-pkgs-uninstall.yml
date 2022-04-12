@@ -1,0 +1,19 @@
+- name: uninstall required virt packages
+  tags:
+    - vms_pkgs_down
+  block:
+  - name: uninstall required virt packages
+    tags:
+      - vms_pkgs_down
+    block:
+    - name: uninstall-virtualization-packages
+      apt:
+        name: "{{ item }}"
+        state: absent
+        update_cache: true
+      register: apt_virt_pkgs
+      retries: 3
+      delay: 10
+      until: apt_virt_pkgs is success
+      become: true
+      with_items: "{{ virt_pkgs }}"

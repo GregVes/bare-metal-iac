@@ -1,0 +1,15 @@
+- name: list vms
+  tags:
+    - virt_vm_list
+  block:
+  - name: list running VMs
+    virt:
+      command: list_vms
+      state: running
+    register: running_vms
+    become_user: "{{ virt_admin }}"
+    become: true
+
+  - name: print running VMs
+    debug:
+      var: running_vms

@@ -1,0 +1,102 @@
+- name: zsh-install
+  tags: zsh_up
+  block:
+  - name: install-zsh
+    apt:
+      name: zsh
+      update_cache: yes
+      state: present
+    register: apt_zsh_pkg
+    retries: 3
+    delay: 10
+    until: apt_zsh_pkg is success
+    become: true
+
+  - name: change-users-shell-to-zsh
+    user:
+      name: "{{ item }}"
+      shell: /bin/zsh
+    become: true
+    with_items: "{{ users + admins }}"
+
+  - name: check-if-ohmyzsh-dir-exists
+    stat:
+      path: "/home/{{ item }}/.oh-my-zsh"
+    register: ohmyzsh_dir
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+
+  - name: install-oh-my-zsh
+    script:
+      cmd: zsh-install.sh
+      chdir: "/home/{{ item[1] }}"
+    become: true
+    become_user: "{{ item[1] }}"
+    when: item[0].stat.exists == False
+    with_together:
+      - "{{ ohmyzsh_dir.results }}"
+      - "{{ users + admins }}"
+
+  - name: install-oh-my-zsh-plugins
+    git:
+      repo: "{{ item[0].url }}"
+      clone: true
+      dest: "/home/{{ item[1] }}/.oh-my-zsh/custom/plugins/{{ item[0].name }}"
+    become: true
+    become_user: "{{ item[1] }}"
+    with_nested:
+      - "{{ oh_my_zsh_plugins }}"
+      - "{{ users + admins }}"
+
+  - name: add-oh-my-zsh-plugins-to-zshrc
+    lineinfile:
+      path: "/home/gregory/.zshrc"
+      regexp: '^plugins=\(git\)'
+      line: plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+      state: present
+    become: true
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+
+  - name: load-oh-my-zsh-theme
+    copy:
+      src: robbyrussell.zsh-theme
+      dest: "/home/{{ item }}/.oh-my-zsh/themes"
+      owner: "{{ item }}"
+      group: "{{ item }}"
+      mode: 0664
+    become: true
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+
+  - name: source .zshrc
+    shell: source "/home/{{ item }}/.zshrc"
+    become: true
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+    args:
+      executable: /bin/zsh
+
+- name: delete-oh-my-zsh
+  file:
+    state: absent
+    path: "/home/{{ item }}/.oh-my-zsh"
+  become: true
+  become_user: "{{ item }}"
+  with_items: "{{ users + admins }}"
+
+- name: delete-zshrc
+  file:
+    state: absent
+    path: "/home/{{ item }}/.zshrc"
+  become: true
+  become_user: "{{ item }}"
+  with_items: "{{ users + admins }}"
+
+- name: uninstall-zsh
+  apt:
+    name: zsh
+    state: absent
+  become: true
+
+  tags: zsh_uninstall

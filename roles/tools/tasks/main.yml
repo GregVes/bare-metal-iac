@@ -1,106 +1,27 @@
-- name: tools
-  block:
-  - name: update repo and upgrade packages
-    apt:
-      upgrade: yes
-      update_cache: yes
-      cache_valid_time: 86400 # 1 day
-    become: yes
-    tags:
-      - upgrade
+- name: install system packages
+  include_tasks: sys-pkgs-install.yml
+  tags: sys_pkgs_up
 
-  - name: install utils
-    apt:
-      name: ["tree", "htop", "vim", "jq", "python-pip", "python3-pip", "strace"]
-    register: toolsinstalled
-    retries: 3
-    delay: 10
-    until: toolsinstalled is not failed
-    become: true
+- name: uninstall system packages
+  include_tasks: sys-pkgs-uninstall.yml
+  tags:
+    - sys_pkgs_down
 
-  - name: copy bash profile
-    copy:
-      dest: ~/.vimrc
-      src: vimrc
-  - name: network tools
-    apt:
-      name: ['net-tools', 'dnsutils', 'netcat', "wget", "tcpdump", "rsync"]
-    register: toolsinstalled
-    retries: 3
-    delay: 10
-    until: toolsinstalled is not failed
-    become: true
-    tags:
-      - network
+- name: install ufw firewall
+  include_tasks: firewall-install.yml
+  tags: firewall_up
 
-  - name: snapd package manager
-    apt:
-      name: [ 'snapd' ]
-    register: toolsinstalled
-    retries: 3
-    delay: 10
-    until: toolsinstalled is not failed
-    become: true
-    tags:
-      - network
+- name: uninstall ufw firewall
+  include_tasks: firewall-uninstall.yml
+  tags:
+    - firewall_down
 
-  - name: certbot
-    snap:
-      name: certbot
-      classic: yes
-    become: true
+- name: install Docker components
+  include_tasks: docker-install.yml
+  tags:
+    - docker_up
 
-  - name: Check if Jabba is already installed
-    stat:
-      path: "/home/{{ item }}/.jabba"
-    register: jabba
-    with_items: "{{ users + admins }}"
-    become_user: "{{ item }}"
-    with_items: "{{ users + admins }}"
-    tags:
-      - java
-
-  - name: Install Jabba if not installed
-    script: jabba-install.sh
-    tags:
-      - java
-    when: item[0].stat.exists == False
-    become: true
-    become_method: sudo
-    become_user: "{{ item[1] }}"
-    tags:
-      - java
-    with_together:
-      - "{{ jabba.results }}"
-      - "{{ users + admins }}"
-
-  - name: Check if Jabba post instructions are set in ~/.bashrc
-    lineinfile:
-      state: absent
-      path: "/home/{{ item }}/.bashrc"
-      regexp: "jabba"
-    check_mode: true
-    changed_when: false
-    register: check_bashrc
-    with_items: "{{ users + admins }}"
-    become: true
-    become_method: sudo
-    become_user: "{{ item }}"
-    tags:
-      - java
-
-  - name: Update ~/.bashrc after Jabba install if not done
-    lineinfile:
-      state: present
-      path: "/home/{{ item[1] }}/.bashrc"
-      line: "[ -s '/home/{{ item[1] }}/.jabba/jabba.sh' ] && source '/home/{{ item[1] }}/.jabba/jabba.sh'"
-    when: item[0].found == 0
-    with_together:
-      - "{{ check_bashrc.results }}"
-      - "{{ users + admins }}"
-    become: true
-    become_method: sudo
-    become_user: "{{ item[1] }}"
-    tags:
-      - java
-  tags: tools
+- name: uninstall Docker components
+  include_tasks: docker-uninstall.yml
+  tags:
+    - docker_down

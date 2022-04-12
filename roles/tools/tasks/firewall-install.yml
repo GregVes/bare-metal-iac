@@ -1,0 +1,39 @@
+- name: install and configure ufw firewall
+  tags: firewall_up
+  block:
+  - name: install-ufw-firewall
+    apt:
+      name: ufw
+      state: present
+    register: apt_ufw
+    retries: 3
+    delay: 10
+    until: apt_ufw is success
+    become: true
+
+  - name: enable-ufw-firewall
+    ufw:
+      state: enabled
+      policy: deny
+    become: true
+
+  - name: allow-tcp-access-on-port-22
+    ufw:
+      rule: allow
+      name: OpenSSH
+      port: 22
+    become: true
+
+  - name: allow-tcp-access-on-port-80
+    ufw:
+      rule: allow
+      proto: tcp
+      port: 80
+    become: true
+
+  - name: allow-tcp-access-on-port-443
+    ufw:
+      rule: allow
+      proto: tcp
+      port: 443
+    become: true

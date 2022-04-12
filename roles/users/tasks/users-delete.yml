@@ -1,0 +1,11 @@
+- name: delete users
+  tags:
+    - users_down
+  block:
+  - name: delete-users
+    user:
+      name: "{{ item }}"
+      state: absent
+      remove: yes
+    become: true
+    with_items: "{{ users_to_delete }}"

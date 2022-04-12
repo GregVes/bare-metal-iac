@@ -1,0 +1,24 @@
+- name: install system packages
+  tags: sys_pkgs_up
+  block:
+  - name: install-base-packages
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+    register: apt_base_pkg
+    retries: 3
+    delay: 10
+    until: apt_base_pkg is success
+    become: true
+    with_items: "{{ base_pkgs }}"
+
+  - name: install-network-packages
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+    register: apt_network_pkg
+    retries: 3
+    delay: 10
+    until: apt_network_pkg is success
+    become: true
+    with_items: "{{ network_pkgs }}"

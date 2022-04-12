@@ -1,0 +1,78 @@
+- name: generate bridge network config
+  tags:
+    - host_net_config_up
+  block:
+  - name: check-if-cloudinit-disable-network-config exists
+    stat:
+      path: "{{ cloud_init_disable_network }}"
+    register: disable_network
+    become: true
+
+  - name: copy-99-disable-network-config.cfg
+    copy:
+      src: 99-disable-network-config.cfg
+      dest: "{{ cloud_init_disable_network }}"
+    when: disable_network.stat.exists == False
+    become: true
+
+  - name: remove-default-cloud-init-network-config
+    file:
+      name: "{{ cloud_init_network_config }}"
+      state: absent
+    become: true
+
+  - name: check-if-bridge-config-exists
+    stat:
+      path: "{{ bridge_config }}"
+    register: bridge_conf_file
+    become: true
+
+  - name: generate-bridge-config
+    template:
+      src: virt-host-interfaces.j2
+      dest: "{{ bridge_config }}"
+    when: bridge_conf_file.stat.exists == False
+    become: true
+
+  - name: setup-ip-forwarding
+    lineinfile:
+      path: "{{ sys_conf }}"
+      regexp: '^#net.ipv4.ip_forward=1'
+      line: net.ipv4.ip_forward=1
+      state: present
+    become: true
+
+  - name: set-bridge-systectl-values
+    lineinfile:
+      path: "{{ sys_conf }}"
+      line: "{{ item }}"
+      state: present
+    become: true
+    with_items: "{{ bridge_sysctl_values }}"
+
+  - name: remove-bridge-config
+    file:
+      name: "{{ bridge_config }}"
+      state: absent
+    when: bridge_conf_file.stat.exists == True
+    become: true
+
+  - name: remove-cloud-init-network-config.cfg
+    file:
+      path: "{{ cloud_init_disable_network }}"
+      state: absent
+    when: bridge_conf_file.stat.exists == True
+    become: true
+
+  - name: re-enable-default-cloud-init-interfaces-config
+    copy:
+      src: virt-cloud-init-interfaces.j2
+      dest: "{{ cloud_init_network_config }}"
+    when: bridge_conf_file.stat.exists == True
+    become: true
+
+  - name: restart-network-service
+    service:
+      name: network
+      state: restarted
+    become: true

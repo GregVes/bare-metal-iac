@@ -1,0 +1,54 @@
+virt_pkgs:
+  - qemu-kvm
+  - virtinst
+  - bridge-utils
+  - cpu-checker
+  - libguestfs-tools
+  - libvirt-daemon-system
+  - apt-transport-https
+
+virt_admin: gregory
+
+sys_conf: /etc/sysctl.conf
+cloud_init_network_config: /etc/network/interfaces.d/50-cloud-init
+bridge_config: /etc/network/interfaces.d/51-bridge
+cloud_init_disable_network: /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+
+bridge_sysctl_values:
+  - net.bridge.bridge-nf-call-ip6tables=0
+  - net.bridge.bridge-nf-call-iptables=0
+  - net.bridge.bridge-nf-call-arptables=0
+
+main_interface: eno1
+# Only needed for Debian 11 where bridge's default MAC address is not the one of the NI it is attached too. So we have to get the bound NI's MAC address
+# and set it in the bridge config
+#main_interface_mac_address: a4:bf:01:0d:c4:5c
+
+libvirt_group: libvirt
+qemu_conf: /etc/libvirt/qemu.conf
+firewall_before_rules_file: /etc/ufw/before.rules
+virt_path: /home/gregory/virt
+virt_disk_url: https://cloud.debian.org/images/cloud/buster/latest/debian-10-genericcloud-amd64.qcow2
+virt_disks_path: /home/gregory/virt/disks
+virt_config_path: /home/gregory/virt/config
+virt_master_node_k8s_config: virt-k8s-config-master-node.sh
+virt_worker_nodes_k8s_config: virt-k8s-config-worker-nodes.sh
+virt_timezone: Europe/Berlin
+bridge_name: br0
+master_id: 1
+master_node_disk_path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-master.qcow2
+master_node_disk_size: 20
+master_node_hostname: k8s-master
+master_main_net_interface: enp1s0
+master_mac_address: 02:00:00:9c:9c:cc
+master_failover_ip: 51.83.150.197
+master_gateway_ip: 51.38.148.254 # should be host gateway
+master_netmask: 255.255.255.255
+master_network_config_host_path: /home/gregory/virt/config/00-net-config
+master_network_config_dest_path: /etc/network/interfaces.d/
+master_domain_name: k8s-master
+master_max_mem: 2097152
+master_max_vcpu: 2
+resolv_conf_path: /etc/
+worker_nodes:
+  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-1.qcow2, size: 20, hostname: k8s-worker-0 }

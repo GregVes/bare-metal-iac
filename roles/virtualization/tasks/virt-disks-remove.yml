@@ -1,0 +1,10 @@
+- name: create disk images
+  tags:
+    - virt_disks_remove
+  block:
+  - name: remove node disks directory
+    file:
+      path: "{{ virt_path }}"
+      state: absent
+    become_user: "{{ virt_admin }}"
+    become: true

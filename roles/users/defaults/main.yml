@@ -1,0 +1,15 @@
+---
+users_credentials:
+  gregory:
+    ssh_pub_keys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDG3tB9BNCoIlbWUkAjQOO0YHi9vGIPFYwBxDja7+T6RT9yoXfJr1pP4R1/yFKgIbUQwhffdD2ZW96rUDl9t1qiGgYYiu8YTti9oYsouivV8xul9dyYQPozGbbN/ajL4bcwwxAiHULZLl4frcea9jO0R3Cy12i0Xw8SWCOh0KTupaq+N4P62yhlX4MC9j607hO3rBgVex6OpvOm9pMhIHIO5oAttcSSGQ6yhdj/maG/jVZaMZzP2ebbtzLnLyFEVzJv4W/sQLM62PvxBEXYz54XAO22g1gJp7e94gSHcHcaFxl6xi1ZIaUN8+A/A6Rs91WC7cJhcgWgxwBJGCNjmgve1dGBECuADik4u1/DQvioGJe+sNx0ypOzLJDWqvtzMVKnBO12ho8FjJUmQv7eu4N9eKW5A2CyY6BO4uyOVa0EPLYZ6qbj7PMaYVlfFF4+d5wpZ2aylqS2+Tl4g59NOpzzcVnS1NTttuaxWNh3/A3hpo/g6bKREX/0e6UWgBJ0KzM= gregoryvespasien@Gregorys-MacBook-Pro.fritz.box"
+    id: 1002
+
+oh_my_zsh_plugins: [ {
+  "name": "zsh-autosuggestions",
+  "url": "https://github.com/zsh-users/zsh-autosuggestions"
+  }, {
+  "name": "zsh-syntax-highlighting",
+  "url": "https://github.com/zsh-users/zsh-syntax-highlighting"
+  }
+]

@@ -1,0 +1,30 @@
+- name: zsh-uninstall
+  tags:
+    - zsh_down
+  block:
+  - name: delete-oh-my-zsh
+    file:
+      state: absent
+      path: "/home/{{ item }}/.oh-my-zsh"
+    become: true
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+    register: ohmyzsh_remove
+
+  - name: delete-zshrc
+    file:
+      state: absent
+      path: "/home/{{ item }}/.zshrc"
+    become: true
+    become_user: "{{ item }}"
+    with_items: "{{ users + admins }}"
+    when: ohmyzsh_remove
+    register: zshrc_remove
+
+  - name: uninstall-zsh
+    apt:
+      name: zsh
+      state: absent
+    become: true
+    when: zshrc_remove
+    register: zsh_remove

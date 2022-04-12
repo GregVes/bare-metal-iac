@@ -1,0 +1,26 @@
+- name: uninstall system packages
+  tags: sys_pkgs_down
+  block:
+  - name: uninstall-base-packages
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+      state: absent
+    register: apt_base_pkg
+    retries: 3
+    delay: 10
+    until: apt_base_pkg is success
+    become: true
+    with_items: "{{ base_pkgs }}"
+
+  - name: uninstall-network-packages
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+      state: absent
+    register: apt_network_pkg
+    retries: 3
+    delay: 10
+    until: apt_network_pkg is success
+    become: true
+    with_items: "{{ network_pkgs }}"

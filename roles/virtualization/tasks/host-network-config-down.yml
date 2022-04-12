@@ -1,0 +1,23 @@
+- name: remove bridge config
+  tags:
+    - host_net_config_down
+  block:
+    - name: check-if-bridge-config-exists
+      stat:
+        path: "{{ bridge_config }}"
+        state: present
+      register: bridge_conf_file
+      become: true
+
+    - name: remove-bridge-config
+      file:
+        name: "{{ bridge_config }}"
+        state: absent
+      when: bridge_conf_file.stat.exists == True
+      become: true
+
+    # - name: restart-network-service
+    #   service:
+    #     name: network
+    #     state: restarted
+    #   become: true

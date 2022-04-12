@@ -1,0 +1,39 @@
+- name: install Docker components
+  tags: docker_up
+  block:
+  - name: install-required-docker-pkgs
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+      state: present
+    register: apt_docker_required_pkgs
+    retries: 3
+    delay: 10
+    until: apt_docker_required_pkgs is success
+    become: true
+    with_items: "{{ docker_required_pkgs }}"
+
+  - name: add-docker-gpg-apt-key
+    apt_key:
+      url: https://download.docker.com/linux/debian/gpg
+      state: present
+      keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+    become: true
+
+  - name: add-docker-apt-repo
+    apt_repository:
+      repo: deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian buster stable
+      filename: /etc/apt/sources.list.d/docker.list
+    become: true
+
+  - name: install-docker-pkgs
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+      state: present
+    register: apt_docker_pkgs
+    retries: 3
+    delay: 10
+    until: apt_docker_pkgs is success
+    with_items: "{{ docker_pkgs }}"
+    become: true

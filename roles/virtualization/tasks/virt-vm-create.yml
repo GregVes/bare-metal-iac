@@ -1,0 +1,20 @@
+- name: create vms
+  tags:
+    - virt_vm_create
+  block:
+  - name: define VM for k8s master node
+    virt:
+      command: define
+      xml: "{{ lookup('template', 'virt-master-xml.j2') }}"
+      autostart: yes
+    become_user: "{{ virt_admin }}"
+    become: true
+
+  - name: start VM for k8s master node
+    virt:
+      name: "{{ master_node_hostname }}"
+      command: start
+      state: running
+      autostart: yes
+    become_user: "{{ virt_admin }}"
+    become: true
