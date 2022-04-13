@@ -4,7 +4,7 @@
   block:
   - name: remove node disks directory
     file:
-      path: "{{ virt_path }}"
+      path: "{{ virt_working_dir }}"
       state: absent
     become_user: "{{ virt_admin }}"
     become: true

@@ -27,17 +27,15 @@ main_interface: eno1
 libvirt_group: libvirt
 qemu_conf: /etc/libvirt/qemu.conf
 firewall_before_rules_file: /etc/ufw/before.rules
-virt_path: /home/gregory/virt
+virt_working_dir: /home/gregory/virt
 virt_disk_url: https://cloud.debian.org/images/cloud/buster/latest/debian-10-genericcloud-amd64.qcow2
 virt_disks_path: /home/gregory/virt/disks
 virt_config_path: /home/gregory/virt/config
-virt_master_node_k8s_config: virt-k8s-config-master-node.sh
-virt_worker_nodes_k8s_config: virt-k8s-config-worker-nodes.sh
 virt_timezone: Europe/Berlin
 bridge_name: br0
 master_id: 1
 master_node_disk_path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-master.qcow2
-master_node_disk_size: 20
+master_node_disk_size: 40
 master_node_hostname: k8s-master
 master_main_net_interface: enp1s0
 master_mac_address: 02:00:00:9c:9c:cc
@@ -47,8 +45,9 @@ master_netmask: 255.255.255.255
 master_network_config_host_path: /home/gregory/virt/config/00-net-config
 master_network_config_dest_path: /etc/network/interfaces.d/
 master_domain_name: k8s-master
-master_max_mem: 2097152
-master_max_vcpu: 2
+master_max_mem: 4194304
+master_max_vcpus: 4
 resolv_conf_path: /etc/
 worker_nodes:
-  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-1.qcow2, size: 20, hostname: k8s-worker-0 }
+  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-0.qcow2, size: 40, hostname: "k8s-worker-0", max_vcpus: 4, max_mem: 4194304, unique_guest_identifier: 2 }
+  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-1.qcow2, size: 40, hostname: "k8s-worker-1", max_vcpus: 4, max_mem: 4194304, unique_guest_identifier: 3 }
