@@ -1,13 +1,13 @@
-<domain type='kvm' id='{{ worker_nodes[0].unique_guest_identifier }}'>
-  <name>{{ worker_nodes[0].hostname }}</name>
+<domain type='kvm' id='{{ worker_nodes[1].unique_guest_identifier }}'>
+  <name>{{ worker_nodes[1].hostname }}</name>
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
       <libosinfo:os id="http://debian.org/debian/10"/>
     </libosinfo:libosinfo>
   </metadata>
-  <memory unit='KiB'>{{ worker_nodes[0].max_mem }}</memory>
-  <currentMemory unit='KiB'>{{ worker_nodes[0].max_mem }}</currentMemory>
-  <vcpu placement='static'>{{ worker_nodes[0].max_cpu }}</vcpu>
+  <memory unit='KiB'>{{ worker_nodes[1].max_mem }}</memory>
+  <currentMemory unit='KiB'>{{ worker_nodes[1].max_mem }}</currentMemory>
+  <vcpu placement='static'>{{ worker_nodes[1].max_vcpus }}</vcpu>
   <resource>
     <partition>/machine</partition>
   </resource>
@@ -20,7 +20,7 @@
     <apic/>
   </features>
   <cpu>
-    <topology sockets='1' dies='1' cores='{{ worker_nodes[0].max_vcpu }}' threads='1'/>
+    <topology sockets='1' dies='1' cores='{{ worker_nodes[1].max_vcpus }}' threads='1'/>
   </cpu>
   <clock offset='utc'>
     <timer name='rtc' tickpolicy='catchup'/>
@@ -38,7 +38,7 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2'/>
-      <source file='{{ worker_nodes[0].path }}'/>
+      <source file='{{ worker_nodes[1].path }}'/>
       <backingStore/>
       <target dev='vda' bus='virtio'/>
       <alias name='virtio-disk0'/>
@@ -119,7 +119,7 @@
       <alias name='serial0'/>
     </console>
     <channel type='unix'>
-      <source mode='bind' path='/var/lib/libvirt/qemu/channel/target/domain-{{ worker_nodes[0].unique_guest_identifier }}-test/org.qemu.guest_agent.0'/>
+      <source mode='bind' path='/var/lib/libvirt/qemu/channel/target/domain-{{ worker_nodes[1].unique_guest_identifier }}-test/org.qemu.guest_agent.0'/>
       <target type='virtio' name='org.qemu.guest_agent.0' state='disconnected'/>
       <alias name='channel0'/>
       <address type='virtio-serial' controller='0' bus='0' port='1'/>

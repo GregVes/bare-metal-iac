@@ -7,7 +7,7 @@
   </metadata>
   <memory unit='KiB'>{{ master_max_mem }}</memory>
   <currentMemory unit='KiB'>{{ master_max_mem }}</currentMemory>
-  <vcpu placement='static'>{{ master_max_vcpu }}</vcpu>
+  <vcpu placement='static'>{{ master_max_vcpus }}</vcpu>
   <resource>
     <partition>/machine</partition>
   </resource>
@@ -20,7 +20,7 @@
     <apic/>
   </features>
   <cpu>
-    <topology sockets='1' dies='1' cores='{{ master_max_vcpu }}' threads='1'/>
+    <topology sockets='1' dies='1' cores='{{ master_max_vcpus }}' threads='1'/>
   </cpu>
   <clock offset='utc'>
     <timer name='rtc' tickpolicy='catchup'/>
