@@ -6,7 +6,6 @@
     virt:
       command: define
       xml: "{{ lookup('template', 'virt-master-xml.j2') }}"
-      autostart: yes
     become_user: "{{ virt_admin }}"
     become: true
 
@@ -15,6 +14,22 @@
       name: "{{ master_node_hostname }}"
       command: start
       state: running
-      autostart: yes
     become_user: "{{ virt_admin }}"
     become: true
+
+  - name: define VMs for k8s worker nodes
+    virt:
+      command: define
+      xml: "{{ lookup('template', 'virt-worker-{{ item.unique_guest_identifier }}-xml.j2') }}"
+    become_user: "{{ virt_admin }}"
+    become: true
+    with_items: "{{ worker_nodes }}"
+
+  - name: start VMs for k8s worker nodes
+    virt:
+      name: "{{ item.hostname }}"
+      command: start
+      state: running
+    become_user: "{{ virt_admin }}"
+    become: true
+    with_items: "{{ worker_nodes }}"
