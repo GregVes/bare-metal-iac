@@ -2,6 +2,14 @@
   tags:
     - virt_vm_remove
   block:
+  - name: list running VMs
+    virt:
+      command: list_vms
+      state: running
+    register: running_vms
+    become_user: "{{ virt_admin }}"
+    become: true
+
   - name: stop vms
     virt:
       name: "{{ item }}"
@@ -9,7 +17,7 @@
       state: shutdown
     become_user: "{{ virt_admin }}"
     become: true
-    with_items: "{{ vms_to_remove }}"
+    with_items: "{{ running_vms['list_vms'] }}"
 
   - name: undefine vms
     virt:
@@ -17,4 +25,4 @@
       command: undefine
     become_user: "{{ virt_admin }}"
     become: true
-    with_items: "{{ vms_to_remove }}"
+    with_items: "{{ running_vms['list_vms'] }}"

@@ -3,9 +3,9 @@ iface lo inet loopback
 allow-hotplug {{ master_main_net_interface }}
 
 iface {{ master_main_net_interface }} inet static
-    address {{ master_failover_ip }}
+    address {{ master_ip }}
     netmask {{ master_netmask }}
-    broadcast {{ master_failover_ip }}
+    broadcast {{ master_ip }}
     gateway {{ master_gateway_ip }}
     post-up ip route add {{ master_gateway_ip }} dev {{ master_main_net_interface }}
     post-up ip route add default via {{ master_gateway_ip }}

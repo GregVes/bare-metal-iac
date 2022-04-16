@@ -1,44 +1,65 @@
 #!/bin/sh
 
-set -x
+set -e
 
-echo "Installing ca-certificastes gnupg and lsb-release"
-apt-get install -y ca-certificates gnupg lsb-release
+echo "Installing ca-certificates gnupg and lsb-release"
+apt update
+apt install -y ca-certificates gnupg lsb-release
 
 curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
 
 echo "Installing Docker related packages"
-apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
+apt update
+apt install -y docker-ce docker-ce-cli containerd.io
 
-apt-get update \
-  && apt-get install -y apt-transport-https \
-  && curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+# k8s stuff
+
+apt update
+apt install -y apt-transport-https ca-certificates
 
 echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
 
-# k8s stuf
-apt-get update && apt-get install -y kubelet kubeadm kubernetes-cni
+
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+
+curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+
+apt update
+apt install -y kubelet kubeadm kubectl
+apt-mark hold kubelet kubeadm kubectl
 
 # this fix 'connection refused' error when running kubeadm init
 echo "Adding systemd as native.cgroupdriver in /etc/docker/daemon.json"
 echo '{\n    "exec-opts": ["native.cgroupdriver=systemd"]\n}' > /etc/docker/daemon.json
+
 echo "Reloading daemon-reload, docker and kubelet"
 systemctl daemon-reload
 systemctl restart docker
 systemctl restart kubelet
 
-# init control plan
-# echo "Initialize control plan"
-# kubeadm init
-# echo "Setting kubeconfig"
-# mkdir -p /root/.kube
-# cp -i /etc/kubernetes/admin.conf /root/.kube/config
-# chown $(id -u):$(id -g) /root/.kube/config
+echo "Initialize control plan"
+kubeadm init
+echo "Setting kubeconfig"
+mkdir -p /root/.kube
+cp -i /etc/kubernetes/admin.conf /root/.kube/config
+chown $(id -u):$(id -g) /root/.kube/config
 
-# echo "Adding Container Network Interface (CNI)"
-# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+echo "Adding Container Network Interface (CNI)"
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
-# echo "k8s-master VM created. Run sudo kubeadm token create --print-join-command inside master node to get token for worker"
+echo "k8s-master VM created. Run sudo kubeadm token create --print-join-command inside master node to get token for worker"
