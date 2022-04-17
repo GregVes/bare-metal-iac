@@ -33,13 +33,14 @@ virt_disks_path: /home/gregory/virt/disks
 virt_config_path: /home/gregory/virt/config
 virt_timezone: Europe/Berlin
 bridge_name: br0
+ssh_key_name: id_rsa.k8s-nodes
 master_id: 1
 master_node_disk_path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-master.qcow2
 master_node_disk_size: 40
 master_node_hostname: k8s-master
 master_main_net_interface: enp1s0
 master_mac_address: 02:00:00:9c:9c:cc
-master_failover_ip: 51.83.150.197
+master_ip: 51.83.150.197
 master_gateway_ip: 51.38.148.254 # should be host gateway
 master_netmask: 255.255.255.255
 master_network_config_host_path: /home/gregory/virt/config/00-net-config
@@ -49,5 +50,5 @@ master_max_mem: 4194304
 master_max_vcpus: 4
 resolv_conf_path: /etc/
 worker_nodes:
-  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-0.qcow2, size: 40, hostname: "k8s-worker-0", max_vcpus: 4, max_mem: 4194304, unique_guest_identifier: 2 }
-  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-1.qcow2, size: 40, hostname: "k8s-worker-1", max_vcpus: 4, max_mem: 4194304, unique_guest_identifier: 3 }
+  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-0.qcow2, size: 40, hostname: "k8s-worker-0", max_vcpus: 4, max_mem: 4194304, unique_guest_identifier: 2, fnr: 4 } # fnr is the line number in awk command parsing 'virsh net-dhcp-leases default'
+  - { path: /home/gregory/virt/disks/debian-10-genericcloud-amd64-worker-1.qcow2, size: 40, hostname: "k8s-worker-1", max_vcpus: 4, max_mem: 4194304, unique_guest_identifier: 3, fnr: 3 }

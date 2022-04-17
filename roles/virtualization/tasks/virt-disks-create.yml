@@ -94,7 +94,7 @@
     become: true
     when: master_domain_name not in running_vms['list_vms']
 
-  - name: copy k8s config for worker nodes
+  - name: copy k8s config script for worker nodes
     copy:
       src: virt-k8s-config-worker-nodes.sh
       dest: "{{ virt_config_path }}/virt-k8s-config-worker-nodes.sh"
@@ -116,7 +116,22 @@
     become: true
     when: running_vms["list_vms"] | length == 0
 
-  - name: customize - hostname, root password, timezone, copy resolv.conf - master node image
+  - name: check if ssh keypair exists
+    stat:
+      path: "/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}"
+    become_user: "{{ virt_admin }}"
+    become: true
+    register: ssh_key
+
+  - name: generate ssh keypair
+    openssh_keypair:
+      path: "/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}"
+      force: true
+    when: ssh_key.stat.exists == False
+    become_user: "{{ virt_admin }}"
+    become: true
+
+  - name: customize - root password, timezone, hostname, copy network config and resolv.conf, copy k8s components script - master node image
     shell: |
       sudo virt-customize  \
         -a "{{ master_node_disk_path }}" \
@@ -125,19 +140,23 @@
         --hostname "{{ master_node_hostname }}" \
         --copy-in "{{ virt_config_path }}/00-net-config:{{ master_network_config_dest_path }}" \
         --copy-in "{{ virt_config_path }}/resolv.conf:{{ resolv_conf_path }}" \
-        --copy-in "{{ virt_config_path }}/virt-k8s-config-master-node.sh:/root"
+        --copy-in "{{ virt_config_path }}/virt-k8s-config-master-node.sh:/root" \
+        --ssh-inject "root:file:/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}.pub" \
+        --run-command "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server"
     become_user: "{{ virt_admin }}"
     become: true
     when: master_domain_name not in running_vms['list_vms']
 
-  - name: customize - root password, timezone, hostname - worker nodes images
+  - name: customize - root password, timezone, hostname, copy k8s components script - worker nodes images
     shell: |
       sudo virt-customize \
         -a "{{ item.path }}" \
         --root-password password:"{{ virt_root_password }}" \
         --timezone "{{ virt_timezone }}" \
         --hostname "{{ item.hostname }}" \
-        --copy-in  "{{ virt_config_path }}/virt-k8s-config-worker-nodes.sh:/root"
+        --copy-in "{{ virt_config_path }}/virt-k8s-config-worker-nodes.sh:/root" \
+        --ssh-inject "root:file:/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}.pub" \
+        --run-command "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server"
     become_user: "{{ virt_admin }}"
     become: true
     when: item.hostname not in running_vms['list_vms']
