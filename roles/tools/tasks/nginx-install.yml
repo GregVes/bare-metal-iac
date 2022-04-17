@@ -1,0 +1,23 @@
+- name: install and configure nginx
+  tags: nginx_up
+  block:
+  - name: install-nginx
+    apt:
+      name: nginx
+      update_cache: yes
+    register: nginx_install
+    retries: 3
+    delay: 10
+    until: nginx_install is success
+    become: true
+
+  - name: allow-nginx-traffic
+    shell: sudo ufw allow 'Nginx Full'
+    become: true
+
+  - name: copy nginx config
+    copy:
+      src: gregentoo.com.conf
+      dest:  /etc/nginx/conf.d/gregentoo.com.conf
+    notify: nginx reloaded
+    become: true

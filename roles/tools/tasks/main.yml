@@ -25,3 +25,8 @@
   include_tasks: docker-uninstall.yml
   tags:
     - docker_down
+
+- name: install and configure Nginx
+  include_tasks: nginx-install.yml
+  tags:
+    - nginx_up
