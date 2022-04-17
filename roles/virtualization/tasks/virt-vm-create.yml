@@ -33,3 +33,24 @@
     become_user: "{{ virt_admin }}"
     become: true
     with_items: "{{ worker_nodes }}"
+
+
+  - name: retrieve worker nodes private IPs
+    shell: >
+      set -o pipefail ;
+      sudo virsh net-dhcp-leases default
+      | awk 'FNR == "{{ item.fnr }}" {print $5}'
+      | awk -F "/" '{print $1}'
+    register: vm_ip
+    with_items: "{{ worker_nodes }}"
+    args:
+      executable: /bin/bash
+
+  - name: define list of VMs IPs
+    set_fact:
+      vms_ips: []
+
+  - name: append VMs IPs to list
+    set_fact:
+      vms_ips: "{{ vms_ips + [ item.stdout ] }}"
+    with_items: "{{ vm_ip.results }}"
