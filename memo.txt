@@ -1,6 +1,0 @@
-Memo
-
-Some encountered issues:
-
-- when configure ssh for VM: "fatal: No supported key exchange algorithms [preauth]."
-    solution: dpkg-reconfigure openssh-server (see https://docs.jdcloud.com/en/virtual-machines/ssh-login-report-no-supported-key-exchange-algorithms)
