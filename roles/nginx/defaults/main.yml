@@ -1,0 +1,8 @@
+pkgs:
+  - python3-pip
+  - nginx
+  - certbot
+  - python3-certbot-nginx
+letsencrypt_dir: /etc/letsencrypt/live/gregentoo.com
+letsencrypt_domain: gregentoo.com
+letsencrypt_email: vespasiengregory@gmail.com

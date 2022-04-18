@@ -1,0 +1,40 @@
+- name: install and configure nginx
+  tags: nginx_up
+  block:
+  - name: check if letsencrypt dir exist
+    stat:
+      path: "{{ letsencrypt_dir }}"
+    become: true
+    register: letsencrypt
+
+  - name: install ssl/tls packages
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+    register: pkgs_install
+    retries: 3
+    delay: 10
+    until: pkgs_install is success
+    become: true
+    with_items: "{{ pkgs }}"
+    when: letsencrypt.stat.exists == False
+
+  - name: allow-nginx-traffic
+    shell: sudo ufw allow 'Nginx Full'
+    become: true
+    when: letsencrypt.stat.exists == False
+
+  - name: copy nginx config
+    copy:
+      src: gregentoo.com.conf
+      dest:  /etc/nginx/conf.d/gregentoo.com.conf
+    become: true
+    when: letsencrypt.stat.exists == False
+
+  - name: generate tls/ssl cert for server
+    shell: certbot --nginx --non-interactive --agree-tos --domains {{ letsencrypt_domain }} --email {{ letsencrypt_email }}
+    become: true
+    notify: nginx reloaded
+    when: letsencrypt.stat.exists == False
+    args:
+      executable: /bin/bash
