@@ -44,3 +44,4 @@
         - containerd.io
         - docker-compose
     - role: virtualization
+    - role: nginx
