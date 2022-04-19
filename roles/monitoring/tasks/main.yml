@@ -1,0 +1,68 @@
+- name: deploy monitoring services
+  tags:
+    - monitoring_up
+  block:
+  - name: Get infos on prometheus_container
+    docker_container_info:
+      name: "{{ prometheus_container }}"
+    become: true
+    register: prometheus
+
+  - name: Create monitoring dir if not exists
+    file:
+      path: "/home/{{ admin }}/{{ monitoring_dir }}"
+      state: directory
+      owner: "{{ admin }}"
+    become_user: "{{ admin }}"
+    become: true
+    when: prometheus.exists == False
+
+  - name: Create monitoring subdirs if not exists
+    file:
+      path: "/home/{{ admin }}/{{ monitoring_dir }}/{{ item }}"
+      state: directory
+      owner: "{{ admin }}"
+    become_user: "{{ admin }}"
+    become: true
+    with_items:
+      - "{{ prometheus_dir }}"
+      - "{{ grafana_dir }}"
+    when: prometheus.exists == False
+
+  - name: Copy docker-compose
+    template:
+      src: docker-compose.yml.j2
+      dest: "/home/{{ admin }}/{{ monitoring_dir }}/docker-compose.yml"
+    become_user: "{{ admin }}"
+    become: true
+    when: prometheus.exists == False
+
+  - name: Copy prometheus.yml
+    template:
+      src: prometheus.yml.j2
+      dest: "/home/{{ admin }}/{{ monitoring_dir }}/{{ prometheus_dir }}/prometheus.yml"
+    become_user: "{{ admin }}"
+    become: true
+    when: prometheus.exists == False
+
+  - name: Copy grafana config files
+    template:
+      src: "{{ item[0] }}"
+      dest: "/home/{{ admin }}/{{ monitoring_dir }}/{{ grafana_dir }}/{{ item[1] }}"
+    become_user: "{{ admin }}"
+    become: true
+    with_together:
+      - ["datasource.yml.j2", "grafana.ini.j2"]
+      - ["datasource.yml", "grafana.ini"]
+    when: prometheus.exists == False
+
+  - name: Start services
+    docker_compose:
+      project_src: "/home/{{ admin }}/{{ monitoring_dir }}"
+    register: deploy_output
+    become: true
+    when: prometheus.exists == False
+
+  # - name: check
+  #   debug:
+  #     var: deploy_output

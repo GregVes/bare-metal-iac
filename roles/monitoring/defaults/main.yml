@@ -1,0 +1,25 @@
+# docker-compose
+admin: gregory
+monitoring_dir: monitoring
+grafana_dir: grafana
+prometheus_dir: prometheus
+prometheus_image: prom/prometheus:latest
+prometheus_config: /home/{{ admin}}/{{ monitoring_dir }}/{{ prometheus_dir }}/prometheus.yml
+prometheus_container: monitoring_prometheus
+grafana_image: grafana/grafana:latest
+grafana_ini: /home/{{ admin}}/{{ monitoring_dir }}/{{ grafana_dir }}/grafana.ini
+grafana_datasource: /home/{{ admin}}/{{ monitoring_dir }}/{{ grafana_dir }}/datasource.yml
+grafana_container: monitoring_grafana
+node_exporter_image: prom/node-exporter:latest
+node_exporter_container: monitoring_node_exporter
+
+# grafana.ini
+grafana_domain: gregentoo.com
+
+# grafana datasource
+prometheus_url: http://prometheus:9090
+
+# prometheus.yml
+prometheus_target: localhost:9090
+prometheus_scrape_interval: 15s
+prometheus_scrape_timeout: 10s
