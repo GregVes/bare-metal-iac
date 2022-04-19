@@ -1,0 +1,25 @@
+version: "3.6"
+services:
+  prometheus:
+    image: {{ prometheus_image }}
+    container_name: {{ prometheus_container }}
+    volumes:
+      - {{ prometheus_config }}:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+  grafana:
+    image: {{ grafana_image }}
+    container_name: {{ grafana_container }}
+    volumes:
+      - {{ grafana_ini }}:/etc/grafana/grafana.ini
+      - {{ grafana_datasource }}:/etc/grafana/provisioning/datasources/datasource.yml
+    ports:
+      - 3000:3000
+    links:
+      - prometheus
+  node-exporter:
+    image: {{ node_exporter_image }}
+    container_name: {{ node_exporter_container }}
+    restart: unless-stopped
+    expose:
+      - 9100
