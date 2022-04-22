@@ -23,3 +23,11 @@ services:
     restart: unless-stopped
     expose:
       - 9100
+  libvirt-exporter:
+    image: {{ libvirt_exporter_image }}
+    container_name: {{ libvirt_exporter_container }}
+    restart: unless-stopped
+    volumes:
+      - /run/libvirt/libvirt-sock-ro:/var/run/libvirt/libvirt-sock-ro:ro
+    ports:
+      - 9177:9177

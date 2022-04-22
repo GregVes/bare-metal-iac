@@ -13,6 +13,12 @@ grafana_container: monitoring_grafana
 node_exporter_image: prom/node-exporter:latest
 node_exporter_container: monitoring_node_exporter
 
+# export docker image is https://hub.docker.com/r/bykva/libvirt-exporter
+# grafan dashboard is https://grafana.com/grafana/dashboards/13633?src=tw&mdm=social&camp=graf-getting-started-webinar&plcmt=footer
+libvirt_exporter_image: bykva/libvirt-exporter
+libvirt_exporter_container: monitoring_libvirt_exporter
+libvirt_exporter: libvirt-exporter:9177
+
 # grafana.ini
 grafana_domain: gregentoo.com
 
@@ -20,6 +26,6 @@ grafana_domain: gregentoo.com
 prometheus_url: http://prometheus:9090
 
 # prometheus.yml
-prometheus_target: localhost:9090
+node_exporter: localhost:9090
 prometheus_scrape_interval: 15s
 prometheus_scrape_timeout: 10s
