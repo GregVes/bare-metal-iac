@@ -104,10 +104,19 @@
   - name: copy master network interfaces file into host
     template:
       src: virt-interfaces-master.j2
-      dest: "{{ virt_config_path }}/00-net-config"
+      dest: "{{ virt_config_path }}/00-net-config-k8s-master"
     become_user: "{{ virt_admin }}"
     become: true
     when: master_domain_name not in running_vms['list_vms']
+
+  - name: copy worker nodes network interfaces file into host
+    template:
+      src: "{{ item.network_config_file_name }}"
+      dest: "{{ virt_config_path }}/{{ item.network_config_file_host_dest }}"
+    become_user: "{{ virt_admin }}"
+    become: true
+    when: item.hostname not in running_vms['list_vms']
+    with_items: "{{ worker_nodes }}"
 
   - name: copy /etc/resolv.conf in host
     copy:
@@ -138,7 +147,7 @@
         --root-password password:"{{ virt_root_password }}" \
         --timezone "{{ virt_timezone }}" \
         --hostname "{{ master_node_hostname }}" \
-        --copy-in "{{ virt_config_path }}/00-net-config:{{ master_network_config_dest_path }}" \
+        --copy-in "{{ virt_config_path }}/00-net-config-k8s-master:/etc/network/interfaces.d/" \
         --copy-in "{{ virt_config_path }}/resolv.conf:{{ resolv_conf_path }}" \
         --copy-in "{{ virt_config_path }}/virt-k8s-config-master-node.sh:/root" \
         --ssh-inject "root:file:/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}.pub" \
@@ -154,6 +163,8 @@
         --root-password password:"{{ virt_root_password }}" \
         --timezone "{{ virt_timezone }}" \
         --hostname "{{ item.hostname }}" \
+        --copy-in "{{ virt_config_path }}/{{ item.network_config_file_host_dest }}:/etc/network/interfaces.d/" \
+        --copy-in "{{ virt_config_path }}/resolv.conf:{{ resolv_conf_path }}" \
         --copy-in "{{ virt_config_path }}/virt-k8s-config-worker-nodes.sh:/root" \
         --ssh-inject "root:file:/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}.pub" \
         --run-command "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server"
