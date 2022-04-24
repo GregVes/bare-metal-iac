@@ -21,6 +21,7 @@
         - python3
         - python3-pip
         - stress
+        - snapd
       network_pkgs:
         - nmap
         - net-tools

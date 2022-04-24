@@ -7,16 +7,12 @@
     become: true
     register: letsencrypt
 
-  - name: install ssl/tls packages
-    apt:
-      name: "{{ item }}"
-      update_cache: yes
-    register: pkgs_install
-    retries: 3
-    delay: 10
-    until: pkgs_install is success
+  - name: install certbot via snapd
+    snap:
+      name:
+        - certbot
+      classic: true
     become: true
-    with_items: "{{ pkgs }}"
     when: letsencrypt.stat.exists == False
 
   - name: allow-nginx-traffic
@@ -32,7 +28,7 @@
     when: letsencrypt.stat.exists == False
 
   - name: generate tls/ssl cert for server
-    shell: certbot --nginx --non-interactive --agree-tos --domains {{ letsencrypt_domain }} --email {{ letsencrypt_email }}
+    shell: /snap/bin/certbot --nginx --non-interactive --agree-tos --domains {{ letsencrypt_domain }} --email {{ letsencrypt_email }}
     become: true
     notify: nginx reloaded
     when: letsencrypt.stat.exists == False
