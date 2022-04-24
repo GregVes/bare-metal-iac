@@ -32,6 +32,7 @@
         - curl
         - wget
         - tcpdump
+        - dnsutils
       docker_required_pkgs:
         - apt-transport-https
         - ca-certificates
