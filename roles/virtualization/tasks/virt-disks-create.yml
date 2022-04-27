@@ -86,21 +86,6 @@
     when: item.hostname not in running_vms['list_vms']
     with_items: "{{ worker_nodes }}"
 
-  - name: copy k8s config script for master node
-    copy:
-      src: virt-k8s-config-master-node.sh
-      dest: "{{ virt_config_path }}/virt-k8s-config-master-node.sh"
-    become_user: "{{ virt_admin }}"
-    become: true
-    when: master_domain_name not in running_vms['list_vms']
-
-  - name: copy k8s config script for worker nodes
-    copy:
-      src: virt-k8s-config-worker-nodes.sh
-      dest: "{{ virt_config_path }}/virt-k8s-config-worker-nodes.sh"
-    become_user: "{{ virt_admin }}"
-    become: true
-
   - name: copy master network interfaces file into host
     template:
       src: virt-interfaces-master.j2
@@ -140,6 +125,44 @@
     become_user: "{{ virt_admin }}"
     become: true
 
+  - name: copy ssh private key to control node
+    fetch:
+      src: "/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}"
+      dest: "{{ dest_ssh_key_pair }}"
+      flat: true
+    when: ssh_key.stat.exists == False
+    become_user: "{{ virt_admin }}"
+    become: true
+
+  - name: remove known hosts leftovers from previous configs
+    shell: |
+      ssh-keygen -f "/home/{{ virt_admin }}/.ssh/known_hosts" -R "51.83.150.197"
+      ssh-keygen -f "/home/{{ virt_admin }}/.ssh/known_hosts" -R "51.83.147.42"
+      ssh-keygen -f "/home/{{ virt_admin }}/.ssh/known_hosts" -R "51.83.179.16"
+    become_user: "{{ virt_admin }}"
+    become: true
+
+  - name: copy ssh public key to control node
+    fetch:
+      src: "/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}.pub"
+      dest: "{{ dest_ssh_key_pair }}"
+      flat: true
+    when: ssh_key.stat.exists == False
+    become_user: "{{ virt_admin }}"
+    become: true
+
+  - name: Set correct permission on ssh private key on control node
+    file:
+      path: "{{ dest_ssh_key_pair }}{{ ssh_key_name }}"
+      mode: 0600
+    delegate_to: localhost
+
+  - name: Set correct permission on ssh public key on control node
+    file:
+      path: "{{ dest_ssh_key_pair }}{{ ssh_key_name }}.pub"
+      mode: 0644
+    delegate_to: localhost
+
   - name: customize - root password, timezone, hostname, copy network config and resolv.conf, copy k8s components script - master node image
     shell: |
       sudo virt-customize  \
@@ -149,7 +172,6 @@
         --hostname "{{ master_node_hostname }}" \
         --copy-in "{{ virt_config_path }}/00-net-config-k8s-master:/etc/network/interfaces.d/" \
         --copy-in "{{ virt_config_path }}/resolv.conf:{{ resolv_conf_path }}" \
-        --copy-in "{{ virt_config_path }}/virt-k8s-config-master-node.sh:/root" \
         --ssh-inject "root:file:/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}.pub" \
         --run-command "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server"
     become_user: "{{ virt_admin }}"
@@ -165,7 +187,6 @@
         --hostname "{{ item.hostname }}" \
         --copy-in "{{ virt_config_path }}/{{ item.network_config_file_host_dest }}:/etc/network/interfaces.d/" \
         --copy-in "{{ virt_config_path }}/resolv.conf:{{ resolv_conf_path }}" \
-        --copy-in "{{ virt_config_path }}/virt-k8s-config-worker-nodes.sh:/root" \
         --ssh-inject "root:file:/home/{{ virt_admin }}/.ssh/{{ ssh_key_name }}.pub" \
         --run-command "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server"
     become_user: "{{ virt_admin }}"
@@ -197,3 +218,4 @@
       line: user = "{{ virt_admin }}"
     become: true
     when: running_vms["list_vms"] | length == 0
+  when: inventory_hostname in groups["kvm_host"]

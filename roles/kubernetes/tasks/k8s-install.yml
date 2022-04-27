@@ -1,0 +1,178 @@
+- name: install k8s components
+  tags: k8s_install
+  block:
+    - name: Create a empty file for containerd module.
+      copy:
+        content: ""
+        dest: /etc/modules-load.d/containerd.conf
+        force: no
+      become: true
+
+    - name: Configure module for containerd.
+      blockinfile:
+        path: /etc/modules-load.d/containerd.conf
+        block: |
+          overlay
+          br_netfilter
+      become: true
+
+    - name: Create a empty file for kubernetes sysctl params.
+      copy:
+        content: ""
+        dest: /etc/sysctl.d/99-kubernetes-cri.conf
+        force: no
+      become: true
+
+    - name: Configure sysctl params for Kubernetes.
+      lineinfile:
+        path: /etc/sysctl.d/99-kubernetes-cri.conf
+        line: "{{ item }}"
+      with_items:
+        - 'net.bridge.bridge-nf-call-iptables  = 1'
+        - 'net.ipv4.ip_forward                 = 1'
+        - 'net.bridge.bridge-nf-call-ip6tables = 1'
+      become: true
+
+    - name: Apply sysctl params without reboot.
+      command: sysctl --system
+      become: true
+
+    - name: install pre-required k8s packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      with_items:
+        - ca-certificates
+        - gnupg
+        - lsb-release
+        - software-properties-common
+        - vim
+        - gnupg-agent
+        - curl
+        - apt-transport-https
+        - ca-certificates
+      become: true
+
+    - name: Add Docker's official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ debian_flavor }} stable"
+        state: present
+        filename: docker
+        update_cache: yes
+      become: true
+
+    - name: Add Google official GPG key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+      become: true
+
+    - name: install containerization-related packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      with_items:
+        - docker-ce
+        - containerd.io
+      become: true
+
+    - name: copy Docker's daemon.json file
+      copy:
+        src: docker-daemon.json
+        dest: /etc/docker/daemon.json
+      become: true
+
+    - name: restart Docker service
+      service:
+        name: docker
+      become: true
+
+    - name: Add Kubernetes Repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        filename: kubernetes
+        mode: 0600
+      become: true
+
+    - name: Installing k8s packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - kubeadm
+        - kubectl
+        - kubelet
+      become: true
+
+    - name: reload systemd to reread configs
+      systemd:
+        daemon_reload: yes
+      become: true
+
+    - name: Enable service kubelet and make it start at boot
+      service:
+        name: kubelet
+        enabled: yes
+      become: true
+
+    - name: remove k8s leftovers
+      shell: |
+        rm -rf /var/lib/etcd/ /var/lib/cni /var/run/kubernetes /etc/kubernetes
+        systemctl restart kubelet.service docker.service
+        systemctl daemon-reload
+        #kubeadm reset -f
+      become: true
+
+    - name: init control plane
+      shell: kubeadm init
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: get cluster join command
+      shell: kubeadm token create --print-join-command
+      register: kubeadm_token_create
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: set kubeadm join command
+      set_fact:
+        cluster_join_command: "{{ kubeadm_token_create.stdout }}"
+      when: inventory_hostname == "k8s-master"
+
+    - name: Creates .kube directory on master node
+      file:
+        path: /root/.kube
+        state: directory
+      when: inventory_hostname == "k8s-master"
+
+    - name: copy kubeconfig in .kube on master node
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: deploy (CNI) Container Network Interface plugin
+      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+      when: inventory_hostname == "k8s-master"
+
+    - name: make worker nodes join the cluster
+      shell: "{{ hostvars['k8s-master']['cluster_join_command'] }}"
+      args:
+        executable: /bin/bash
+      when: "'k8s-worker' in inventory_hostname"
+
+    - name: give label to worker nodes
+      shell: "kubectl label node {{ item }} node-role.kubernetes.io/worker=worker"
+      with_items: "{{ worker_nodes }}"
+      when: inventory_hostname == "k8s-master"
+
+  when: inventory_hostname in groups["kvm_guests"]

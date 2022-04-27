@@ -4,7 +4,7 @@ TAG=$1
 EXTRA_VARS=$2
 
 if [ -z "$TAG" ]; then
-    echo "Missing TAG. Example sh run.sh create_users"
+    echo "Missing TAG. Example sh run-host-tasks.sh create_users"
     exit 1
 fi
 

@@ -34,3 +34,4 @@
     when: letsencrypt.stat.exists == False
     args:
       executable: /bin/bash
+  when: inventory_hostname in groups["kvm_host"]

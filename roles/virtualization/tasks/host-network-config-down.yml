@@ -21,3 +21,4 @@
     #     name: network
     #     state: restarted
     #   become: true
+  when: inventory_hostname in groups["kvm_host"]

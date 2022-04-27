@@ -1,50 +1,19 @@
-- hosts:
-  - idealj
+---
+- name: install k8s components
+  hosts: kvm_guests
+  remote_user: root
+
   roles:
-    - role: users
-      admins:
-        - gregory
-      users: []
-    - role: tools
-      admins:
-        - gregory
-      users: []
-      base_pkgs:
-        - git
-        - rsync
-        - tmux
-        - htop
-        - iotop
-        - sysstat
-        - vim
-        - jq
-        - python3
-        - python3-pip
-        - stress
-        - snapd
-      network_pkgs:
-        - nmap
-        - net-tools
-        - dnsutils
-        - ntp
-        - netcat
-        - nload
-        - curl
-        - wget
-        - tcpdump
-        - dnsutils
-      docker_required_pkgs:
-        - apt-transport-https
-        - ca-certificates
-        - software-properties-common
-        - gnupg
-        - lsb-release
-      docker_pkgs:
-        - containerd.io
-        - docker-ce
-        - docker-ce-cli
-        - containerd.io
-        - docker-compose
-    - role: virtualization
-    - role: nginx
-    - role: monitoring
+    - tools
+    - kubernetes
+
+- name: basic configuration for host
+  hosts: kvm_host
+  remote_user: debian
+
+  roles:
+    - users
+    - tools
+    - virtualization
+    - nginx
+    - monitoring

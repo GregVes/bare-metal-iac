@@ -1,6 +1,20 @@
-all:
+kvm_host:
   hosts:
     idealj:
       ansible_host: 51.38.148.95
       ansible_user: debian
       ansible_ssh_private_key_file: "~/.ssh/id_rsa.idealj"
+kvm_guests:
+  hosts:
+    k8s-master:
+      ansible_host: 51.83.150.197
+      ansible_user: root
+      ansible_ssh_private_key_file: "~/.ssh/id_rsa.k8s-nodes"
+    k8s-worker-0:
+      ansible_host: 51.83.147.42
+      ansible_user: root
+      ansible_ssh_private_key_file: "~/.ssh/id_rsa.k8s-nodes"
+    k8s-worker-1:
+      ansible_host: 51.83.179.16
+      ansible_user: root
+      ansible_ssh_private_key_file: "~/.ssh/id_rsa.k8s-nodes"

@@ -37,3 +37,4 @@
       proto: tcp
       port: 443
     become: true
+  when: inventory_hostname in groups["kvm_host"]

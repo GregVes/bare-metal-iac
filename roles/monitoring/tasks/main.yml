@@ -63,6 +63,4 @@
     become: true
     when: prometheus.exists == False
 
-  # - name: check
-  #   debug:
-  #     var: deploy_output
+  when: inventory_hostname in groups["kvm_host"]

@@ -1,0 +1,3 @@
+- name: install k8s components
+  include_tasks: k8s-install.yml
+  tags: k8s_install
