@@ -77,6 +77,13 @@
         filename: docker
         update_cache: yes
 
+    - name: remove Kubernetes Repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: absent
+        filename: kubernetes
+      become: true
+
     # key ID needed for deletion for the apt eyring
     # - name: remove Docker's official GPG key
     #   apt_key:
