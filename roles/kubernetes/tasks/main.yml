@@ -1,3 +1,7 @@
 - name: install k8s components
   include_tasks: k8s-install.yml
   tags: k8s_install
+
+- name: uninstall k8s components
+  include_tasks: k8s-uninstall.yml
+  tags: k8s_uninstall

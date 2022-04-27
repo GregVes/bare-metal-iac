@@ -1,0 +1,91 @@
+- name: uninstall k8s components
+  tags: k8s_uninstall
+  block:
+    - name: stop kubelet in worker nodes
+      systemd:
+        name: kubelet
+        state: stopped
+      when: "'k8s-worker' in inventory_hostname"
+
+    - name: cordon, drain and delete worker nodes
+      shell: |
+        kubectl drain "{{ item }}" --ignore-daemonsets
+        kubectl cordon "{{ item }}"
+        kubectl delete node "{{ item }}"
+      args:
+        executable: /bin/bash
+      with_items: "{{ worker_nodes }}"
+      when: inventory_hostname == "k8s-master"
+
+    - name: remove k8s dirs
+      shell: |
+        rm -rf /var/lib/etcd/ /var/lib/cni /var/run/kubernetes /etc/kubernetes
+        kubeadm reset -f 2> /dev/null
+      args:
+        executable: /bin/bash
+
+    - name: stop kubelet in master node
+      systemd:
+        name: kubelet
+        state: stopped
+      when: inventory_hostname == "k8s-master"
+
+    - name: uninstalling k8s packages
+      apt:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - kubeadm
+        - kubectl
+        - kubelet
+        - docker-ce
+        - containerd.io
+        - ca-certificates
+        - gnupg
+        - lsb-release
+        - software-properties-common
+        - vim
+        - gnupg-agent
+        - curl
+        - apt-transport-https
+        - ca-certificates
+
+    - name: delete /etc/sysctl.d/99-kubernetes-cri.conf
+      file:
+        path: /etc/sysctl.d/99-kubernetes-cri.conf
+        state: absent
+
+    - name: delete /etc/modules-load.d/containerd.conf
+      file:
+        path: /etc/modules-load.d/containerd.conf
+        state: absent
+
+    - name: delete /root/.kube dir
+      file:
+        path: /root/.kube
+        state: absent
+      when: inventory_hostname == "k8s-master"
+
+    - name: apply sysctl params without reboot.
+      command: sysctl --system
+      become: true
+
+    - name: remove Docker Repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ debian_flavor }} stable"
+        state: absent
+        filename: docker
+        update_cache: yes
+
+    # key ID needed for deletion for the apt eyring
+    # - name: remove Docker's official GPG key
+    #   apt_key:
+    #     url: https://download.docker.com/linux/debian/gpg
+    #     state: absent
+
+    # - name: remove Google official GPG key
+    #   apt_key:
+    #     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    #     state: absent
+
+  when: inventory_hostname in groups["kvm_guests"]

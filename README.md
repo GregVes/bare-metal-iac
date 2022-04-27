@@ -9,3 +9,4 @@ Doc to do:
 * setup prometheus, grafana and exporters for monitoring
 * setup nginx reverse proxy + certbot
 * create VMs for Kubernetes nodes
+* installing k8s componentns in nodes, init cluster and make worker nodes join it
