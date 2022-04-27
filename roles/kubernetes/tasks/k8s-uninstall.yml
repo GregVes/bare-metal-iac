@@ -1,0 +1,23 @@
+- name: uninstall k8s components
+  tags: k8s_uninstall
+  block:
+    - name: cordon, drain and delete worker nodes
+      shell: |
+        kubectl drain "{{ item }}" --ignore-daemonsets
+        sleep 2
+        kubectl delete "{{ item }}"
+      args:
+        executable: /bin/bash
+      with_items: "{{ worker_nodes }}"
+      when: inventory_hostname == "k8s-master"
+
+    - name: reset master node
+      shell: |
+        rm -rf /var/lib/etcd/ /var/lib/cni /var/run/kubernetes /etc/kubernetes
+        systemctl restart kubelet.service docker.service
+        systemctl daemon-reload
+        kubeadm reset -f 2> /dev/null
+      args:
+        executable: /bin/bash
+
+  when: inventory_hostname in groups["kvm_guests"]
