@@ -11,7 +11,6 @@
     until: apt_base_pkg is success
     become: true
     with_items: "{{ base_pkgs }}"
-
   - name: install-network-packages
     apt:
       name: "{{ item }}"
@@ -22,3 +21,4 @@
     until: apt_network_pkg is success
     become: true
     with_items: "{{ network_pkgs }}"
+  when: inventory_hostname in groups["kvm_host"]

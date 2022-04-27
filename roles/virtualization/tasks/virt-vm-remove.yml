@@ -26,3 +26,4 @@
     become_user: "{{ virt_admin }}"
     become: true
     with_items: "{{ running_vms['list_vms'] }}"
+  when: inventory_hostname in groups["kvm_host"]

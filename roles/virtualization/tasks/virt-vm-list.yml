@@ -13,3 +13,4 @@
   - name: print running VMs
     debug:
       var: running_vms
+  when: inventory_hostname in groups["kvm_host"]

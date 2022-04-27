@@ -34,23 +34,26 @@
     become: true
     with_items: "{{ worker_nodes }}"
 
+  - name: add kvm guests to known hosts file on control node
+    shell: |
+      #ssh-keygen -f "{{ dest_ssh_key_pair}}known_hosts" -R "51.83.150.197"
+      #ssh-keygen -f "{{ dest_ssh_key_pair}}known_hosts" -R "51.83.147.42"
+      #ssh-keygen -f "{{ dest_ssh_key_pair}}known_hosts" -R "51.83.179.16"
 
-  - name: retrieve worker nodes private IPs
-    shell: >
-      set -o pipefail ;
-      sudo virsh net-dhcp-leases default
-      | awk 'FNR == "{{ item.fnr }}" {print $5}'
-      | awk -F "/" '{print $1}'
-    register: vm_ip
-    with_items: "{{ worker_nodes }}"
-    args:
-      executable: /bin/bash
+      ssh-keyscan -H 51.83.150.197 >> ~/.ssh/known_hosts
+      ssh-keyscan -H 51.83.147.42 >> ~/.ssh/known_hosts
+      ssh-keyscan -H 51.83.179.16 >> ~/.ssh/known_hosts
+      exit 0
+    delegate_to: localhost
 
-  - name: define list of VMs IPs
-    set_fact:
-      vms_ips: []
-
-  - name: append VMs IPs to list
-    set_fact:
-      vms_ips: "{{ vms_ips + [ item.stdout ] }}"
-    with_items: "{{ vm_ip.results }}"
+  # - name: retrieve worker nodes private IPs
+  #   shell: >
+  #     set -o pipefail ;
+  #     sudo virsh net-dhcp-leases default
+  #     | awk 'FNR == "{{ item.fnr }}" {print $5}'
+  #     | awk -F "/" '{print $1}'
+  #   register: vm_ip
+  #   with_items: "{{ worker_nodes }}"
+  #   args:
+  #     executable: /bin/bash
+  when: inventory_hostname in groups["kvm_host"]

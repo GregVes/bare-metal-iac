@@ -1,4 +1,7 @@
 ---
+admins:
+  - gregory
+users: []
 users_credentials:
   gregory:
     ssh_pub_keys:

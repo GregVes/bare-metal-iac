@@ -19,10 +19,11 @@ bridge_sysctl_values:
   - net.bridge.bridge-nf-call-iptables=0
   - net.bridge.bridge-nf-call-arptables=0
 
+
+# Copy destination of the key pairs used in ansible host to authenticate to kvm guests
+dest_ssh_key_pair: /Users/gregoryvespasien/.ssh/
+
 main_interface: eno1
-# Only needed for Debian 11 where bridge's default MAC address is not the one of the NI it is attached too. So we have to get the bound NI's MAC address
-# and set it in the bridge config
-#main_interface_mac_address: a4:bf:01:0d:c4:5c
 
 libvirt_group: libvirt
 qemu_conf: /etc/libvirt/qemu.conf

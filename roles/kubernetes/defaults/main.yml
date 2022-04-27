@@ -1,0 +1,5 @@
+---
+debian_flavor: buster
+worker_nodes:
+  - k8s-worker-0
+  - k8s-worker-1

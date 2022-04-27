@@ -8,3 +8,4 @@
       state: absent
     become_user: "{{ virt_admin }}"
     become: true
+  when: inventory_hostname in groups["kvm_host"]
