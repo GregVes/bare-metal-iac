@@ -1,15 +1,18 @@
 #!/bin/sh
 
-TAG=$1
-EXTRA_VARS=$2
+set -e
 
-if [ -z "$TAG" ]; then
+TAG=$1
+HOSTS=$2
+EXTRA_ARGS=$3
+
+if [ -z "${TAG}" ]; then
     echo "Missing TAG. Example sh run-host-tasks.sh create_users"
-    exit 1
+    exit 0
 fi
 
-if [ -z "$EXTRA_VARS" ]; then
-    ansible-playbook -t $1 -i inventory.yml playbook.yml
+if [ -z "${EXTRA_ARGS}" ]; then
+    ansible-playbook -t $TAG -i inventory.yml playbook.yml --limit=$HOSTS
 else
-    ansible-playbook -t $1 -i inventory.yml playbook.yml --extra-vars $2
+    ansible-playbook -t $TAG -i inventory.yml playbook.yml --extra-vars $2 --limit=$HOSTS
 fi
