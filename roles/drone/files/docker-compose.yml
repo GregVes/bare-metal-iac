@@ -1,0 +1,48 @@
+version: "3.6"
+services:
+  drone-server:
+    image: drone/drone:latest
+    container_name: ci_drone_server
+    depends_on:
+      - db
+    environment:
+      - DRONE_SERVER_HOST=${DRONE_SERVER_HOST}
+      - DRONE_SERVER_PROTO=https
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+      - DRONE_COOKIE_TIMEOUT=720h
+      - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
+      - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET}
+      - DRONE_LOGS_DEBUG=true
+      - DRONE_CRON_DISABLED=true
+      - DRONE_DATABASE_DRIVER=postgres
+      - DRONE_DATABASE_DATASOURCE=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/drone?sslmode=disable
+      - DRONE_REDIS_CONNECTION=redis://redis-server:6379
+    ports:
+      - 3001:80
+  drone-runner:
+    image: drone/drone-runner-docker:latest
+    container_name: ci_drone_runner
+    environment:
+      - DRONE_RPC_HOST=${DRONE_SERVER_HOST}
+      - DRONE_RPC_PROTO=https
+      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+      - DRONE_TMATE_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - drone-server
+  redis-server:
+    image: redis
+    container_name: ci_drone_redis_store
+  db:
+    image: postgres
+    container_name: ci_drone_postgres_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=drone
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

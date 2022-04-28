@@ -1,0 +1,25 @@
+- name: Config Nginx and SSL cert
+  tags: drone_nginx_up
+  block:
+  - name: check if letsencrypt dir for gregentoo-ci.com exists
+    stat:
+      path: "{{ letsencrypt_dir }}"
+    register: letsencrypt_dir
+    become: true
+
+  - name: copy nginx config
+    copy:
+      src: "{{ nginx_conf }}"
+      dest:  "{{ nginx_conf_path }}"
+    become: true
+    when: letsencrypt_dir.stat.exists == False
+
+  - name: generate tls/ssl cert for gregentoo-ci.com server
+    shell: /snap/bin/certbot --nginx --non-interactive --agree-tos --domains {{ letsencrypt_domain }} --email {{ letsencrypt_email }}
+    become: true
+    notify: nginx reloaded
+    when: letsencrypt_dir.stat.exists == False
+    args:
+      executable: /bin/bash
+
+  when: inventory_hostname in groups["kvm_host"]

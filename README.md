@@ -6,7 +6,8 @@ Doc to do:
 * install system packages
 * setup docker environment
 * setup firewall
-* setup prometheus, grafana and exporters for monitoring
+* deploy a prometheus/ grafana stack
+* deploy a Drone stack for CI/CD
 * setup nginx reverse proxy + certbot
 * create VMs for Kubernetes nodes
 * installing k8s componentns in nodes, init cluster and make worker nodes join it
