@@ -1,0 +1,17 @@
+- name: Tear down Drone stack
+  tags: drone_uninstall
+  block:
+    - name: Get infos on Drone server container
+      docker_container_info:
+        name: "{{ drone_server_container }}"
+      become: true
+      register: drone_server
+
+    - name: Tear down Drone services
+      docker_compose:
+        project_src: "/home/{{ admin }}/{{ drone_dir }}"
+        state: absent
+      become: true
+      when: drone_server.exists == True
+
+  when: inventory_hostname in groups["kvm_host"]

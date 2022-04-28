@@ -1,0 +1,8 @@
+letsencrypt_dir: /etc/letsencrypt/live/gregentoo-ci.com
+letsencrypt_domain: gregentoo-ci.com
+letsencrypt_email: vespasiengregory@gmail.com
+admin: gregory
+nginx_conf: gregentoo-ci.com.conf
+nginx_conf_path: /etc/nginx/conf.d/gregentoo-ci.com.conf
+drone_server_container: ci_drone_server
+drone_dir: drone

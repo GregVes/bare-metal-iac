@@ -1,0 +1,14 @@
+- name: Config Nginx and SSL cert
+  include_tasks: nginx-config.yml
+  tags:
+    - drone_nginx_up
+
+- name: Deploy Drone stack
+  include_tasks: drone-install.yml
+  tags:
+    - drone_install
+
+- name: Remove Drone stack
+  include_tasks: drone-uninstall.yml
+  tags:
+    - drone_uninstall
