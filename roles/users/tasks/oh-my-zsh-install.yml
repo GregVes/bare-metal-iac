@@ -1,7 +1,7 @@
 - name: zsh-install
   tags: zsh_up
   block:
-  - name: install-zsh
+  - name: configure zsh and ohmyzsh
     apt:
       name: zsh
       update_cache: yes
@@ -84,19 +84,3 @@
   become: true
   become_user: "{{ item }}"
   with_items: "{{ users + admins }}"
-
-- name: delete-zshrc
-  file:
-    state: absent
-    path: "/home/{{ item }}/.zshrc"
-  become: true
-  become_user: "{{ item }}"
-  with_items: "{{ users + admins }}"
-
-- name: uninstall-zsh
-  apt:
-    name: zsh
-    state: absent
-  become: true
-
-  tags: zsh_uninstall

@@ -4,7 +4,7 @@
     - name: check if .kube dir exists
       stat:
         path: /root/.kube
-        state: present
+        #state: present
       register: kube_dir
 
     - name: stop kubelet in worker nodes

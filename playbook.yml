@@ -5,6 +5,7 @@
 
   roles:
     - tools
+    - users
     - kubernetes
 
 - name: basic configuration for host
