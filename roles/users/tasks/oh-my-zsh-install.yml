@@ -21,7 +21,7 @@
 
   - name: check-if-ohmyzsh-dir-exists
     stat:
-      path: "/home/{{ item }}/.oh-my-zsh"
+      path: "{% if item == 'root' %}/root/.oh-my-zsh{% else %}/home/{{ item }}/.oh-my-zsh{% endif %}"
     register: ohmyzsh_dir
     become_user: "{{ item }}"
     with_items: "{{ users + admins }}"
@@ -29,7 +29,7 @@
   - name: install-oh-my-zsh
     script:
       cmd: zsh-install.sh
-      chdir: "/home/{{ item[1] }}"
+      chdir: "{% if item[1] == 'root' %}/root{% else %}/home/{{ item[1] }}{% endif %}"
     become: true
     become_user: "{{ item[1] }}"
     when: item[0].stat.exists == False
@@ -41,7 +41,7 @@
     git:
       repo: "{{ item[0].url }}"
       clone: true
-      dest: "/home/{{ item[1] }}/.oh-my-zsh/custom/plugins/{{ item[0].name }}"
+      dest: "{% if item[1] == 'root' %}/root/.oh-my-zsh/custom/plugins/{{ item[0].name }}{% else %}/home/{{ item[1] }}/.oh-my-zsh/custom/plugins/{{ item[0].name }}{% endif %}"
     become: true
     become_user: "{{ item[1] }}"
     with_nested:
@@ -50,7 +50,7 @@
 
   - name: add-oh-my-zsh-plugins-to-zshrc
     lineinfile:
-      path: "/home/gregory/.zshrc"
+      path: "{% if item == 'root' %}/root/.zshrc{% else %}/home/{{ item }}/.zshrc{% endif %}"
       regexp: '^plugins=\(git\)'
       line: plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
       state: present
@@ -61,7 +61,7 @@
   - name: load-oh-my-zsh-theme
     copy:
       src: robbyrussell.zsh-theme
-      dest: "/home/{{ item }}/.oh-my-zsh/themes"
+      dest: "{% if item == 'root' %}/root/.oh-my-zsh/themes{% else %}/home/{{ item }}/.oh-my-zsh/themes{% endif %}"
       owner: "{{ item }}"
       group: "{{ item }}"
       mode: 0664
@@ -70,17 +70,17 @@
     with_items: "{{ users + admins }}"
 
   - name: source .zshrc
-    shell: source "/home/{{ item }}/.zshrc"
+    shell: "source {% if item == 'root' %}/root/.zshrc{% else %}/home/{{ item }}/.zshrc{% endif %}"
     become: true
     become_user: "{{ item }}"
     with_items: "{{ users + admins }}"
     args:
       executable: /bin/zsh
 
-- name: delete-oh-my-zsh
-  file:
-    state: absent
-    path: "/home/{{ item }}/.oh-my-zsh"
-  become: true
-  become_user: "{{ item }}"
-  with_items: "{{ users + admins }}"
+# - name: delete-oh-my-zsh
+#   file:
+#     state: absent
+#     path: "/home/{{ item }}/.oh-my-zsh"
+#   become: true
+#   become_user: "{{ item }}"
+#   with_items: "{{ users + admins }}"

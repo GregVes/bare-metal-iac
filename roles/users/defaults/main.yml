@@ -1,6 +1,7 @@
 ---
 admins:
   - gregory
+  - root
 users: []
 users_credentials:
   gregory:
