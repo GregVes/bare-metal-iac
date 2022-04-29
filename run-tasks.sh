@@ -14,5 +14,5 @@ fi
 if [ -z "${EXTRA_ARGS}" ]; then
     ansible-playbook -t $TAG -i inventory.yml playbook.yml --limit=$HOSTS
 else
-    ansible-playbook -t $TAG -i inventory.yml playbook.yml --extra-vars $2 --limit=$HOSTS
+    ansible-playbook -t $TAG -i inventory.yml playbook.yml --extra-vars $EXTRA_ARGS --limit=$HOSTS
 fi
