@@ -37,3 +37,4 @@
     until: apt_docker_pkgs is success
     with_items: "{{ docker_pkgs }}"
     become: true
+  when: inventory_hostname in groups["kvm_host"]

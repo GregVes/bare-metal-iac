@@ -1,7 +1,6 @@
 ---
 admins:
   - gregory
-  #- root
   - kiril
 users: []
 users_credentials:

@@ -14,6 +14,7 @@ base_pkgs:
   - python3-pip
   - stress
   - snapd
+  - git
 network_pkgs:
   - nmap
   - net-tools

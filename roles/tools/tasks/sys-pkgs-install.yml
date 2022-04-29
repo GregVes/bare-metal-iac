@@ -21,4 +21,3 @@
     until: apt_network_pkg is success
     become: true
     with_items: "{{ network_pkgs }}"
-  when: inventory_hostname in groups["kvm_host"]
