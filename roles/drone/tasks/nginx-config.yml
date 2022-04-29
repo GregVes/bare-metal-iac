@@ -1,5 +1,5 @@
 - name: Config Nginx and SSL cert
-  tags: drone_nginx_up
+  tags: drone_up
   block:
   - name: check if letsencrypt dir for gregentoo-ci.com exists
     stat:

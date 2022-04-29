@@ -1,5 +1,5 @@
 - name: Deploy Drone stack
-  tags: drone_install
+  tags: drone_up
   block:
     - name: Get infos on Drone server container
       docker_container_info:
