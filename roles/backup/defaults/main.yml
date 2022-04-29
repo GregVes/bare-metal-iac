@@ -1,0 +1,71 @@
+admin: gregory
+python_bin: python3
+borg_packages:
+  - libssl-dev
+  - libacl1-dev
+  - libacl1
+  - build-essential
+  - python3-setuptools
+  - python3-dev
+  - python3-pip
+  - python3-pkgconfig
+  - python3-msgpack
+  - python3-venv
+  - openssh-client
+  - cron
+borg_python_packages_dependencies:
+  - cython
+  - pkgconfig
+borg_python_packages:
+  - borgbackup
+  - borgmatic
+borg_encryption_passphrase: "{{ lookup('env','borg_passphrase') }}"
+borg_repository: "{{ lookup('env','borg_repo') }}"
+borgmatic_config_name: config.yaml
+borg_lock_wait_time: 5
+borgmatic_checks:
+  - repository
+borgmatic_check_last: 3
+borgmatic_relocated_repo_access_is_ok: false
+borg_ssh_command: false
+borg_one_file_system: true
+borgmatic_store_atime: true
+borgmatic_store_ctime: true
+borg_encryption_passcommand: false
+borg_remote_rate_limit: 0
+borg_retention_policy:
+  keep_hourly: 3
+  keep_daily: 7
+  keep_weekly: 4
+  keep_monthly: 6
+borgmatic_hooks:
+  before_backup:
+    - echo "`date` - Starting backup."
+borg_source_directories:
+  - /etc
+  - /home
+  - /opt
+  - /root
+  - /usr
+  - /var
+borg_exclude_patterns:
+  - /proc
+  - /boot
+  - /dev
+  - /sys
+  - /etc/udev/rules.d
+  - /lost+found
+  - /lib
+  - /lib32
+  - /lib64
+  - /libx32
+  - /media
+  - /mnt
+  - /sbin
+  - /bin
+  - /srv
+  - /sys
+  - /tmp
+borgmatic_cron_hour: 0
+borgmatic_cron_minute: 0
+borgmatic_cron_name: borgmatic
