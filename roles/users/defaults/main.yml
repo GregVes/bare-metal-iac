@@ -1,13 +1,19 @@
 ---
 admins:
   - gregory
-  - root
+  #- root
+  - kiril
 users: []
 users_credentials:
   gregory:
     ssh_pub_keys:
       - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDG3tB9BNCoIlbWUkAjQOO0YHi9vGIPFYwBxDja7+T6RT9yoXfJr1pP4R1/yFKgIbUQwhffdD2ZW96rUDl9t1qiGgYYiu8YTti9oYsouivV8xul9dyYQPozGbbN/ajL4bcwwxAiHULZLl4frcea9jO0R3Cy12i0Xw8SWCOh0KTupaq+N4P62yhlX4MC9j607hO3rBgVex6OpvOm9pMhIHIO5oAttcSSGQ6yhdj/maG/jVZaMZzP2ebbtzLnLyFEVzJv4W/sQLM62PvxBEXYz54XAO22g1gJp7e94gSHcHcaFxl6xi1ZIaUN8+A/A6Rs91WC7cJhcgWgxwBJGCNjmgve1dGBECuADik4u1/DQvioGJe+sNx0ypOzLJDWqvtzMVKnBO12ho8FjJUmQv7eu4N9eKW5A2CyY6BO4uyOVa0EPLYZ6qbj7PMaYVlfFF4+d5wpZ2aylqS2+Tl4g59NOpzzcVnS1NTttuaxWNh3/A3hpo/g6bKREX/0e6UWgBJ0KzM= gregoryvespasien@Gregorys-MacBook-Pro.fritz.box"
     id: 1002
+  kiril:
+    ssh_pub_keys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC7b+XYw36FXGgDNxeS8DiNQwrC9ox4wkhvlvXfnCTv8kvzPzTLQ5dmlxPWXDofS8/TwUz87Y5C6Eq7c0vjx96gf3ZaVCEvLw7dOwt9pcBKPfo16UfALrygnw4UsWiGApgbxeCfQ1BqbmpI7z7d9NXmebI3f/hEYk0wa2HEB2lPB0Ze83AZ1XXkMpvmlNQb/wOXerxqbSzeaVG/WrXxKB3W7/6n3WDcQa9NXX5N8nKxI7uniqQZSyNjumq7lYDPb+I6Rsuzi9VFV5BFOiEREsvF054zo5ym+UQ2tGB+qRLAlHl8K/fnzO2P0/M5Yz3UahuHfLqS6XlnswPTqjsi8ac1tydziTGcQNN3JD8sWFzYoOd3XSxPEBMwOUjEiFAjvw4LMrcxHILItogPbGRpeoqrpnOLkeHVw5PW3hq2JCN0GBJyV1Vdauc3qb+2HHKvmlu7oXBvXr1e+NFLryEEBK0zblrO+bSDgID/+W3/kU+xOfUxPxTwpQ2oIRAYuesj7dsoNkOEZRqsB2Zfd74CTDi8sEqXXBC0W4FyHV3/Nz83imEawxRMcFoiGqKXcHPxYXPg8QOGEJyj/IE3HFRuKCEovdqE0O6iYgdw2hmYeykfVL26YDMz4Q/lRafgUAFarWvOk6iPOK3VR+f3ICO+QE0LX2lw6f2xEXTD558gfgkCaQ== kiril.jurbinsky@curalie.com"
+    id: 1003
+
 
 oh_my_zsh_plugins: [ {
   "name": "zsh-autosuggestions",

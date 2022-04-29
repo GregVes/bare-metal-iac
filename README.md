@@ -11,3 +11,4 @@ Doc to do:
 * setup nginx reverse proxy + certbot
 * create VMs for Kubernetes nodes
 * installing k8s componentns in nodes, init cluster and make worker nodes join it
+* daily system backup to BorgBase
