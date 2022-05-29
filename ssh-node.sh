@@ -9,5 +9,5 @@ elif [ "$NODE" == "worker-0" ]; then
 elif [ "$NODE" == "worker-1" ]; then
     ssh $NODE_LINUX_USER@$WORKER_1_IP
 else
-    echo "Worker node ${NODE} does not exist"
+    echo "Node ${NODE} does not exist"
 fi
