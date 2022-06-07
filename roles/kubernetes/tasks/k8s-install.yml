@@ -1,3 +1,5 @@
+
+   
 - name: install k8s components
   tags: k8s_install
   block:
@@ -215,19 +217,5 @@
         state: restarted
         daemon_reload: true
       become: true
-
-    # - name: install metalLB - load balance traffice for bare-metal k8s
-    #   script: install-metallb.sh
-    #   when: inventory_hostname == "k8s-master"
-
-    # - name: copy metalLB config
-    #   copy:
-    #     src: metallb-config.yml
-    #     dest: /root/metallb-config.yml
-    #   when: inventory_hostname == "k8s-master"
-
-    # - name: install metalLB
-    #   script: install-metallb-config.sh
-    #   when: inventory_hostname == "k8s-master"
 
   when: inventory_hostname in groups["kvm_guests"]

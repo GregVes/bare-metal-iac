@@ -4,7 +4,6 @@
     - name: check if .kube dir exists
       stat:
         path: /root/.kube
-        #state: present
       register: kube_dir
 
     - name: stop kubelet in worker nodes
@@ -12,6 +11,15 @@
         name: kubelet
         state: stopped
       when: "'k8s-worker' in inventory_hostname and kube_dir.stat.exists == True"
+
+    - name: check if worker nodes are running
+      shell: >
+        set -o pipefail ;
+        kubectl get nodes | awk 'END{print NR}'
+      register: nodes
+      args:
+        executable: /bin/bash
+      when: inventory_hostname == "k8s-master"
 
     - name: cordon, drain and delete worker nodes
       shell: |
@@ -21,7 +29,7 @@
       args:
         executable: /bin/bash
       with_items: "{{ worker_nodes }}"
-      when: inventory_hostname == "k8s-master" and kube_dir.stat.exists == True
+      when: inventory_hostname == "k8s-master" and kube_dir.stat.exists == True and nodes.stdout > "2"
 
     - name: remove k8s dirs
       shell: |
