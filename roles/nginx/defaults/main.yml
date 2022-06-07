@@ -1,4 +1,0 @@
-letsencrypt_dir: /etc/letsencrypt/live/gregentoo.com
-letsencrypt_domain: gregentoo.com
-letsencrypt_email: vespasiengregory@gmail.com
-admin: gregory

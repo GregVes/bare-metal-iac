@@ -40,15 +40,6 @@ As the above title says
 sh run-tasks.sh sys_pkgs_up kvm_host
 ```
 
-### Install and configure Nginx
-
-Install Nginx and copy and default conf file wit some locations for prometheus an grafana. You can just remove them if it is not needed for your config
-
-```sh
-See roles/nginx/defaults/main.yml before running this
-sh run-tasks.sh nginx_up kvm_host
-```
-
 ## Install Prometheus/Grafana instances
 
 Uses Docker compose
