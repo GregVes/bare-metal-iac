@@ -23,3 +23,6 @@ ansible-playbook -t zsh_up -i inventory.yml playbook.yml --limit 'kvm_guests'
 
 # install k8s components and start cluster
 ansible-playbook -t k8s_install -i inventory.yml playbook.yml
+
+# install openebs components
+ansible-playbook -t openebs_install -i inventory.yml playbook.yml

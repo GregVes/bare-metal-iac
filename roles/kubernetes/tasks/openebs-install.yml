@@ -1,0 +1,17 @@
+- name: install openebs components
+  tags: openebs_install
+  block:
+    - name: install open-iscsi
+      apt:
+        name: open-iscsi
+        update_cache: true
+      become: true
+
+    - name: enable iscid service
+      systemd:
+        name: iscsid
+        enabled: true
+        state: started
+      become: true
+
+  when: inventory_hostname in groups["kvm_guests"]

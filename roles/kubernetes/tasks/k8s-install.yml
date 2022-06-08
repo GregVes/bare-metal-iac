@@ -1,5 +1,3 @@
-
-   
 - name: install k8s components
   tags: k8s_install
   block:
