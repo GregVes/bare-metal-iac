@@ -12,3 +12,8 @@
       shell: kubectl apply -f /root/nginx-ingress-controller.yml
       become: true
       when: inventory_hostname == "k8s-master"
+
+    - name: install cert-manager
+      shell: kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+      become: true
+      when: inventory_hostname == "k8s-master"
