@@ -26,3 +26,6 @@ ansible-playbook -t k8s_install -i inventory.yml playbook.yml
 
 # install openebs components
 ansible-playbook -t openebs_install -i inventory.yml playbook.yml
+
+# install nginx ingress controller
+ansible-playbook -t nginx_ingress_controller_install -i inventory.yml playbook.yml

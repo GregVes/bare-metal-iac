@@ -1,0 +1,14 @@
+- name: install nginx ingress controller
+  tags: nginx_ingress_controller_install
+  block:
+    - name: Copy nginx ingress controller deployment file
+      copy:
+        src: nginx-ingress-controller.yml
+        dest: /root/nginx-ingress-controller.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: install nginx ingress controller
+      shell: kubectl apply -f /root/nginx-ingress-controller.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
