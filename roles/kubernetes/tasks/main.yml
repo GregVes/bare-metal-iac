@@ -5,3 +5,11 @@
 - name: uninstall k8s components
   include_tasks: k8s-uninstall.yml
   tags: k8s_uninstall
+
+- name: install openebs components
+  include_tasks: openebs-install.yml
+  tags: openebs_install
+
+- name: install nginx ingress controller
+  include_tasks: nginx-ingress-controller-install.yml
+  tags: nginx_ingress_controller_install

@@ -83,6 +83,20 @@
         - containerd.io
       become: true
 
+    # see https://www.reddit.com/r/kubernetes/comments/utiymt/kubeadm_init_running_into_issue_error_cri/
+    - name: remove disable CRI plugin from containerd config
+      lineinfile:
+        path: /etc/containerd/config.toml
+        regexp: 'disabled_plugins'
+        state: absent
+
+    - name: restart containerd service
+      systemd:
+        name: containerd
+        state: restarted
+        daemon_reload: true
+      become: true
+
     - name: copy Docker's daemon.json file
       copy:
         src: docker-daemon.json
@@ -134,7 +148,7 @@
       #when: inventory_hostname == "k8s-master"
 
     - name: init control plane
-      shell: kubeadm init
+      shell: kubeadm init --pod-network-cidr=172.16.0.0/16
       become: true
       when: inventory_hostname == "k8s-master"
 
@@ -151,8 +165,26 @@
         remote_src: true
       when: inventory_hostname == "k8s-master"
 
-    - name: deploy (CNI) Container Network Interface plugin
-      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    - name: remove NoSchedule taint on master node
+      shell: kubectl taint node k8s-master node-role.kubernetes.io/master:NoSchedule-
+      when: inventory_hostname == "k8s-master"
+
+    # - name: deploy (CNI) Container Network Interface plugin
+    #   shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    #   when: inventory_hostname == "k8s-master"
+
+    - name: install Project Calico operator
+      shell: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+      when: inventory_hostname == "k8s-master"
+
+    - name: copy calico-installation.yml
+      copy:
+        src: calico-installation.yml
+        dest: /root/calico-installation.yml
+      when: inventory_hostname == "k8s-master"
+
+    - name: install Project Calico installation enabling BGP peering and setting Calico as network plugin
+      shell: kubectl apply -f /root/calico-installation.yml
       when: inventory_hostname == "k8s-master"
 
     - name: get cluster join command
@@ -176,5 +208,12 @@
       shell: "kubectl label node {{ item }} node-role.kubernetes.io/worker=worker"
       with_items: "{{ worker_nodes }}"
       when: inventory_hostname == "k8s-master"
+
+    - name: restart containerd service
+      systemd:
+        name: containerd
+        state: restarted
+        daemon_reload: true
+      become: true
 
   when: inventory_hostname in groups["kvm_guests"]

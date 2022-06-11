@@ -56,7 +56,7 @@
 
   - name: check if worker nodes disk images exist
     stat:
-      path: "{{ item.path }}"
+      path: "{{ item.main_disk_path }}"
     register: worker_disks_images
     become_user: "{{ virt_admin }}"
     become: true
@@ -65,26 +65,58 @@
   - name: download worker nodes disk images if not exist
     get_url:
       url: "{{ virt_disk_url }}"
-      dest: "{{ item[1].path  }}"
+      dest: "{{ item[1].main_disk_path  }}"
     become: true
     when: item[0].stat.exists == False
     with_together:
       - "{{ worker_disks_images.results }}"
       - "{{ worker_nodes }}"
 
-  - name: resize master node disk image
+  # disable because of https://github.com/openebs/openebs/issues/3495
+  # - name: create master additional disks for storage
+  #   community.general.filesize:
+  #     path: "{{ master_node_additional_disk_path }}"
+  #     size: "{{ master_node_disk_size }}"
+  #   become_user: "{{ virt_admin }}"
+  #   become: true
+  #   when: master_disk_image.stat.exists == False
+
+  # - name: create workers additional disks for storage
+  #   community.general.filesize:
+  #     path: "{{ item.additional_disk_path }}"
+  #     size: "{{ item.size }}"
+  #   become_user: "{{ virt_admin }}"
+  #   become: true
+  #   when: master_disk_image.stat.exists == False
+  #   with_items: "{{ worker_nodes }}"
+
+  - name: resize master node disks
     shell: |
       sudo qemu-img resize "{{ master_node_disk_path }}" "{{ master_node_disk_size }}"G
     become_user: "{{ virt_admin }}"
     become: true
     when: master_node_hostname not in running_vms['list_vms']
 
-  - name: resize workers nodes disk images
+  - name: resize workers nodes disk
     shell: |
-      sudo qemu-img resize "{{ item.path }}" "{{ item.size }}"G
+      sudo qemu-img resize "{{ item.main_disk_path }}" "{{ item.size }}"G
     become: true
     when: item.hostname not in running_vms['list_vms']
     with_items: "{{ worker_nodes }}"
+
+  # disable because of https://github.com/openebs/openebs/issues/3495
+  # - name: convert master additional disk into raw format
+  #   shell: |
+  #     sudo qemu-img create -f raw "{{ master_node_additional_disk_path }}" "{{ master_node_disk_size }}"G
+  #   become: true
+  #   when: master_node_hostname not in running_vms['list_vms']
+
+  # - name: convert workers' additional disk into raw format
+  #   shell: |
+  #     sudo qemu-img create -f raw "{{ item.additional_disk_path }}" "{{ item.size }}"G
+  #   become: true
+  #   when: item.hostname not in running_vms['list_vms']
+  #   with_items: "{{ worker_nodes }}"
 
   - name: copy master network interfaces file into host
     template:
@@ -181,7 +213,7 @@
   - name: customize - root password, timezone, hostname, copy k8s components script - worker nodes images
     shell: |
       sudo virt-customize \
-        -a "{{ item.path }}" \
+        -a "{{ item.main_disk_path }}" \
         --root-password password:"{{ virt_root_password }}" \
         --timezone "{{ virt_timezone }}" \
         --hostname "{{ item.hostname }}" \
