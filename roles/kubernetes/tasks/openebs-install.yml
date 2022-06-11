@@ -6,6 +6,7 @@
         name: open-iscsi
         update_cache: true
       become: true
+      when: "'k8s-worker' in inventory_hostname"
 
     - name: enable iscid service
       systemd:
@@ -13,5 +14,64 @@
         enabled: true
         state: started
       become: true
+      when: "'k8s-worker' in inventory_hostname"
+
+    - name: add iscsi_tcp kernel module
+      community.general.modprobe:
+        name: iscsi_tcp
+        state: present
+      become: true
+      when: "'k8s-worker' in inventory_hostname"
+
+    - name: append iscsi_tcp to /etc/modules-load.d/iscsi-tcp.conf
+      shell: echo iscsi_tcp >/etc/modules-load.d/iscsi-tcp.conf
+      become: true
+      when: "'k8s-worker' in inventory_hostname"
+
+    - name: install OpenEBS localpv-hostpath
+      shell: kubectl apply -f  https://openebs.github.io/charts/hostpath-operator.yaml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: copy hostpath-storage-class.yml
+      copy:
+        src: hostpath-storage-class.yml
+        dest: /root/hostpath-storage-class.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: install hostpath-storage-class.yml
+      shell: kubectl apply -f /root/hostpath-storage-class.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: install jiva operator
+      shell: kubectl apply -f https://openebs.github.io/charts/jiva-operator.yaml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: copy jiva-volume-policy.yml
+      copy:
+        src: jiva-volume-policy.yml
+        dest: /root/jiva-volume-policy.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: install jiva-volume-policy
+      shell: kubectl apply -f /root/jiva-volume-policy.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: copy jiva-storage-class.yml
+      copy:
+        src: jiva-storage-class.yml
+        dest: /root/jiva-storage-class.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: install jiva-storage-class.yml
+      shell: kubectl apply -f /root/jiva-storage-class.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
 
   when: inventory_hostname in groups["kvm_guests"]
