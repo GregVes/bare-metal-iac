@@ -27,9 +27,7 @@
     with_items: "{{ users + admins }}"
 
   - name: install-oh-my-zsh
-    script:
-      cmd: zsh-install.sh
-      chdir: "{% if item[1] == 'root' %}/root{% else %}/home/{{ item[1] }}{% endif %}"
+    shell: sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
     become: true
     become_user: "{{ item[1] }}"
     when: item[0].stat.exists == False

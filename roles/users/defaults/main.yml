@@ -2,6 +2,7 @@
 admins:
   - gregory
   - kiril
+  - root
 users: []
 users_credentials:
   gregory:

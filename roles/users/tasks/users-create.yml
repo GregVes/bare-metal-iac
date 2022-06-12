@@ -5,7 +5,7 @@
     group:
       name: "{{ item }}"
       gid: "{{ users_credentials[item].id }}"
-    when: users_credentials[item].id is defined
+    when: users_credentials[item].id is defined and item != "root"
     become: true
     with_items: "{{ users + admins }}"
 
@@ -17,6 +17,7 @@
       home: "/home/{{ item }}"
       password: "{{ default_password | password_hash('sha512') }}"
     become: true
+    when: item != "root"
     with_items: "{{ users + admins }}"
 
   - name: add-admins-to-sudo-group
@@ -25,6 +26,7 @@
       groups: sudo
       append: true
     become: true
+    when: item != "root"
     with_items: "{{ admins }}"
 
   - name: set-sudo-passwordless-for-admins
@@ -32,12 +34,13 @@
       path: /etc/sudoers
       regexp: "^{{ item }}"
       line: "{{ item }} ALL=(ALL) NOPASSWD:ALL"
+    when: item != "root"
     with_items: "{{ admins }}"
     become: true
 
   - name: check-if-vimrc-exists
     stat:
-      path: "/home/{{ item }}/.vimrc"
+      path: "{% if item == 'root' %}/root/.vimrc{% else %}/home/{{ item }}/.vimrc{% endif %}"
     register: vimrc
     become: true
     become_user: "{{ item }}"
@@ -46,7 +49,7 @@
   - name: copy-vimrc-if-not-exists
     copy:
       src: .vimrc
-      dest: "/home/{{ item[1] }}"
+      path: "{% if item[1] == 'root' %}/root{% else %}/home/{{ item[1] }}{% endif %}"
     when: item[0].stat.exists == False
     become: true
     become_user: "{{ item[1] }}"
@@ -58,6 +61,7 @@
     stat:
       path: "/home/{{ item }}/.ssh"
     register: ssh_dir
+    when: item != "root"
     with_items: "{{ users + admins }}"
 
   - name: create-ssh-dir-if-not-exists
@@ -68,7 +72,7 @@
       owner: "{{ item[1] }}"
       group: "{{ item[1] }}"
     become: true
-    when: item[0].stat.exists == False
+    when: item[0].stat.exists == False and item != "root"
     with_together:
       - "{{ ssh_dir.results }}"
       - "{{ users + admins }}"
@@ -79,6 +83,7 @@
       state: present
       key: "{{ users_credentials[item].ssh_pub_keys | join('\n') }}"
     become: true
+    when: item != "root"
     with_items: "{{ users + admins }}"
 
   - name: disable-ssh-password-login
