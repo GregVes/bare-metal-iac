@@ -1,0 +1,40 @@
+allowed_ports_vms:
+  - 10249 # kube-proxy
+  - 9098 # calico
+  - 9099 # calico node
+  - 80 # nginx
+  - 179 # bird
+  - 8081 # nginx
+  - 443 # nginx
+  - 10245 # nginx ingress
+  - 10246 # nginx master
+  - 10247 # nginx master
+  - 10248 # kubelet
+  - 10250 # kubelet
+  - 22 # sshd
+  - 39159 # containerd
+  - 9100 # node exporter
+  - 10254 # nginx ingress
+  - 9808 # liveness probe
+  - 10256 # kube proxy
+  - 10257 # kube controller
+  - 10259 # kube scheduler
+  - 2379 # etcd
+  - 2380 # etcd
+  - 2381 # etcd
+  - 6443 # kube api server
+  - 33389 # containerd
+  - 68 # dhclient
+  - 8443 # nginx ingress
+  - 5473 # calico
+  - 123 # ntpd
+allowed_ports_host:
+  - 80
+  - 443
+  - 22
+  - 9177 # docker proxy
+  - 25 # exim
+  - 53 # dnsmasq
+  - 67 # dnsmasq
+  - 68 # dhclient
+  - 123 # ntpd
