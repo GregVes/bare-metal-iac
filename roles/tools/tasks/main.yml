@@ -7,15 +7,6 @@
   tags:
     - sys_pkgs_down
 
-- name: install ufw firewall
-  include_tasks: firewall-install.yml
-  tags: firewall_up
-
-- name: uninstall ufw firewall
-  include_tasks: firewall-uninstall.yml
-  tags:
-    - firewall_down
-
 - name: install Docker components
   include_tasks: docker-install.yml
   tags:

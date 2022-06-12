@@ -1,0 +1,3 @@
+- name: install ufw firewall
+  include_tasks: firewall-install.yml
+  tags: firewall_up

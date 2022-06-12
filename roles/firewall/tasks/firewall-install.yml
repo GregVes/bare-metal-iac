@@ -17,24 +17,18 @@
       policy: deny
     become: true
 
-  - name: allow-tcp-access-on-port-22
+  - name: allow some ports on host
     ufw:
       rule: allow
-      name: OpenSSH
-      port: 22
+      port: "{{ item }}"
     become: true
+    with_items: "{{ allowed_ports_host }}"
+    when: inventory_hostname in groups["kvm_host"]
 
-  - name: allow-tcp-access-on-port-80
+  - name: allow some ports on VMs
     ufw:
       rule: allow
-      proto: tcp
-      port: 80
+      port: "{{ item }}"
     become: true
-
-  - name: allow-tcp-access-on-port-443
-    ufw:
-      rule: allow
-      proto: tcp
-      port: 443
-    become: true
-  when: inventory_hostname in groups["kvm_host"]
+    with_items: "{{ allowed_ports_vms }}"
+    when: inventory_hostname in groups["kvm_guests"]
