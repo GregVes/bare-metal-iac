@@ -1,0 +1,21 @@
+- name: install cert-manager and configure ssl termination
+  tags: cert_manager_install
+  block:
+    - name: install cert-manager
+      shell: kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: copy prod-issuer.yml
+      copy:
+        src: prod-issuer.yml
+        dest: /root/prod-issuer.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: install cert prod-issuer resource
+      shell: kubectl apply -f /root/prod-issuer.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+  when: inventory_hostname in groups["kvm_guests"]

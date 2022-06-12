@@ -1,0 +1,18 @@
+- name: install prometheus stack
+  tags: prometheus_stack_install
+  block:
+    - name: copy values file for prometheus stack
+      copy:
+        src: kube-prometheus-stack-values.yml
+        dest: /root/kube-prometheus-stack-values.yml
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+    - name: install prometheus stack
+      shell: |
+        kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+        helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f /root/kube-prometheus-stack-values.yml -n monitoring
+      become: true
+      when: inventory_hostname == "k8s-master"
+
+  when: inventory_hostname in groups["kvm_guests"]

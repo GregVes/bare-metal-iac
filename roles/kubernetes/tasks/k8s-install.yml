@@ -216,4 +216,12 @@
         daemon_reload: true
       become: true
 
+    - name: install helm
+      shell: |
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+      become: true
+      when: inventory_hostname == "k8s-master"
+
   when: inventory_hostname in groups["kvm_guests"]
