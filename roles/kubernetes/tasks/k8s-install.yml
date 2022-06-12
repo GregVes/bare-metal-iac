@@ -165,13 +165,16 @@
         remote_src: true
       when: inventory_hostname == "k8s-master"
 
+    - name: copy kubeconfig to local machine
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ kubeconfig_local_path }}"
+        flat: true
+      when: inventory_hostname == "k8s-master"
+
     - name: remove NoSchedule taint on master node
       shell: kubectl taint node k8s-master node-role.kubernetes.io/master:NoSchedule-
       when: inventory_hostname == "k8s-master"
-
-    # - name: deploy (CNI) Container Network Interface plugin
-    #   shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-    #   when: inventory_hostname == "k8s-master"
 
     - name: install Project Calico operator
       shell: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml

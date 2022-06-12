@@ -24,8 +24,22 @@ ansible-playbook -t zsh_up -i inventory.yml playbook.yml --limit 'kvm_guests'
 # install k8s components and start cluster
 ansible-playbook -t k8s_install -i inventory.yml playbook.yml
 
+sleep 5
+
 # install openebs components
 ansible-playbook -t openebs_install -i inventory.yml playbook.yml
 
+sleep 5
+
 # install nginx ingress controller
 ansible-playbook -t nginx_ingress_controller_install -i inventory.yml playbook.yml
+
+sleep 5
+
+# install cert-manager
+ansible-playbook -t cert_manager_install -i inventory.yml playbook.yml
+
+sleep 5
+
+# install prometheus-stack
+ansible-playbook -t prometheus_stack_install -i inventory.yml playbook.yml

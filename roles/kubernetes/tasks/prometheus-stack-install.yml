@@ -11,6 +11,8 @@
     - name: install prometheus stack
       shell: |
         kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo update
         helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f /root/kube-prometheus-stack-values.yml -n monitoring
       become: true
       when: inventory_hostname == "k8s-master"
