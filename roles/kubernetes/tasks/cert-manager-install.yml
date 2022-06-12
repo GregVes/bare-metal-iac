@@ -14,7 +14,7 @@
       when: inventory_hostname == "k8s-master"
 
     - name: install cert prod-issuer resource
-      shell: kubectl apply -f /root/prod-issuer.yml
+      shell: sleep 5 && kubectl apply -f /root/prod-issuer.yml
       become: true
       when: inventory_hostname == "k8s-master"
 
