@@ -13,3 +13,11 @@
 - name: install nginx ingress controller
   include_tasks: nginx-ingress-controller-install.yml
   tags: nginx_ingress_controller_install
+
+- name: install prometheus stack
+  include_tasks: prometheus-stack-install.yml
+  tags: prometheus_stack_install
+
+- name: install cert-manager and configure ssl termination for domain
+  include_tasks: cert-manager-install.yml
+  tags: cert_manager_install
