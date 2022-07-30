@@ -42,4 +42,4 @@ ansible-playbook -t cert_manager_install -i inventory.yml playbook.yml
 sleep 5
 
 # install prometheus-stack
-ansible-playbook -t prometheus_stack_install -i inventory.yml playbook.yml
+# ansible-playbook -t prometheus_stack_install -i inventory.yml playbook.yml
